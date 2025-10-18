@@ -3,10 +3,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../models/user";
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   const user = await User.findOne({ username });
@@ -54,6 +55,21 @@ router.post("/", async (req, res) => {
     .send({ username: user.username, id: user.id });
 
   return;
+});
+
+router.get("/me", middleware.auth, async (req, res) => {
+  const user = await User.findById(req.user?.id);
+
+  if (!user) {
+    return res.status(404).json({ error: "user not found" });
+  }
+
+  res.status(200).send({ username: user.username, id: user.id });
+  return;
+});
+
+router.post("/logout", (_req, res) => {
+  res.clearCookie("token").status(204).end();
 });
 
 export default router;

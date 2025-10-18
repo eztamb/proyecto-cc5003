@@ -28,16 +28,8 @@ const errorHandler = (error: Error, _req: Request, res: Response, next: NextFunc
   next(error);
 };
 
-// definimos una interfaz para extender el objeto request de express
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    username: string;
-  };
-}
-
 // este es nuestro middleware de autenticación
-const auth = (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+const auth = (req: Request, _res: Response, next: NextFunction) => {
   const token = req.cookies.token as string | undefined;
   const csrfTokenFromHeader = req.headers["x-csrf-token"] as string | undefined;
 
