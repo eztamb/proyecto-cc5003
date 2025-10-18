@@ -1,10 +1,14 @@
+import "express-async-errors";
+
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
 import storesRouter from "./controllers/stores";
 import itemsRouter from "./controllers/items";
 import reviewsRouter from "./controllers/reviews";
+import middleware from "./utils/middleware";
 
 dotenv.config();
 
@@ -30,12 +34,16 @@ mongoose
 
 // --- middlewares ---
 app.use(cors());
-app.use(express.json()); // Asegúrate de que esta línea esté aquí
+app.use(express.json());
 
 // --- rutas ---
 app.use("/api/stores", storesRouter);
 app.use("/api/items", itemsRouter);
 app.use("/api/reviews", reviewsRouter);
+
+// --- middlewares de manejo de errores (después de las rutas) ---
+app.use(middleware.unknownEndpoint);
+app.use(middleware.errorHandler);
 
 // --- configuración del servidor ---
 const PORT = 3001;
