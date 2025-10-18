@@ -9,6 +9,7 @@ import storesRouter from "./controllers/stores";
 import itemsRouter from "./controllers/items";
 import reviewsRouter from "./controllers/reviews";
 import usersRouter from "./controllers/users";
+import loginRouter from "./controllers/login";
 import middleware from "./utils/middleware";
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.use("/api/stores", storesRouter);
 app.use("/api/items", itemsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/login", loginRouter);
 
 // --- middlewares de manejo de errores (después de las rutas) ---
 app.use(middleware.unknownEndpoint);
