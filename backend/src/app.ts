@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import storesRouter from "./controllers/stores";
 import itemsRouter from "./controllers/items";
 import reviewsRouter from "./controllers/reviews";
+import usersRouter from "./controllers/users";
 import middleware from "./utils/middleware";
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use(express.json());
 app.use("/api/stores", storesRouter);
 app.use("/api/items", itemsRouter);
 app.use("/api/reviews", reviewsRouter);
+app.use("/api/users", usersRouter);
 
 // --- middlewares de manejo de errores (después de las rutas) ---
 app.use(middleware.unknownEndpoint);

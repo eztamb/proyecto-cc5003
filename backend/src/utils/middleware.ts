@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { MongoServerError } from "mongodb";
 
 // este middleware captura las peticiones a rutas no existentes
 const unknownEndpoint = (_req: Request, res: Response) => {
@@ -14,6 +15,8 @@ const errorHandler = (error: Error, _req: Request, res: Response, next: NextFunc
     return res.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
     return res.status(400).json({ error: error.message });
+  } else if (error.name === "MongoServerError" && (error as MongoServerError).code === 11000) {
+    return res.status(400).json({ error: "expected `username` to be unique" });
   }
 
   // para cualquier otro error, pasamos al siguiente middleware de errores si existe
