@@ -7,7 +7,6 @@ import User from "../models/user";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { username, password } = req.body;
 
   const user = await User.findOne({ username });

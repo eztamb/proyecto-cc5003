@@ -1,6 +1,7 @@
 import express from "express";
 import Item from "../models/item";
 import Store from "../models/store"; // importamos store para verificar que exista
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
@@ -12,8 +13,7 @@ router.get("/", async (_req, res) => {
 });
 
 // post /api/items - crear un nuevo item
-router.post("/", async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+router.post("/", middleware.auth, async (req, res) => {
   const { name, storeId, description, picture, price } = req.body;
 
   // verificamos que la tienda exista

@@ -1,5 +1,6 @@
 import express from "express";
 import Store from "../models/store";
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.get("/:id", async (req, res) => {
 
 // post /api/stores - crear una nueva tienda
 // (más adelante, esta ruta estará protegida)
-router.post("/", async (req, res) => {
+router.post("/", middleware.auth, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
@@ -39,15 +40,14 @@ router.post("/", async (req, res) => {
 });
 
 // delete /api/stores/:id - eliminar una tienda
-// (más adelante, esta ruta estará protegida)
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", middleware.auth, async (req, res) => {
   await Store.findByIdAndDelete(req.params.id);
   res.status(204).end(); // 204 no content
 });
 
 // put /api/stores/:id - actualizar una tienda
 // (más adelante, esta ruta estará protegida)
-router.put("/:id", async (req, res) => {
+router.put("/:id", middleware.auth, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 

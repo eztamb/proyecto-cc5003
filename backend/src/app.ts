@@ -1,4 +1,5 @@
 import "express-async-errors";
+import cookieParser from "cookie-parser";
 
 import express from "express";
 import cors from "cors";
@@ -37,6 +38,7 @@ mongoose
 // --- middlewares ---
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // --- rutas ---
 app.use("/api/stores", storesRouter);

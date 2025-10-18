@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { MongoServerError } from "mongodb";
+import jwt from "jsonwebtoken";
 
 // este middleware captura las peticiones a rutas no existentes
 const unknownEndpoint = (_req: Request, res: Response) => {
@@ -17,13 +18,67 @@ const errorHandler = (error: Error, _req: Request, res: Response, next: NextFunc
     return res.status(400).json({ error: error.message });
   } else if (error.name === "MongoServerError" && (error as MongoServerError).code === 11000) {
     return res.status(400).json({ error: "expected `username` to be unique" });
+  } else if (error.name === "JsonWebTokenError") {
+    return res.status(401).json({ error: "invalid token" });
+  } else if (error.name === "TokenExpiredError") {
+    return res.status(401).json({ error: "token expired" });
   }
 
   // para cualquier otro error, pasamos al siguiente middleware de errores si existe
   next(error);
 };
 
+// definimos una interfaz para extender el objeto request de express
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    username: string;
+  };
+}
+
+// este es nuestro middleware de autenticación
+const auth = (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  const token = req.cookies.token as string | undefined;
+  const csrfTokenFromHeader = req.headers["x-csrf-token"] as string | undefined;
+
+  if (!token || !csrfTokenFromHeader) {
+    // si falta alguno de los tokens, lanzamos un error que será capturado
+    // por nuestro errorHandler
+    const error = new Error("token or csrf token missing");
+    error.name = "JsonWebTokenError"; // lo tratamos como un token inválido
+    throw error;
+  }
+
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+
+  // jwt.verify decodifica y verifica el token. si es inválido, lanza un error.
+  const decodedToken = jwt.verify(token, JWT_SECRET) as {
+    id: string;
+    username: string;
+    csrf: string;
+  };
+
+  // verificamos que el csrf token del payload del jwt coincida con el del header
+  if (decodedToken.csrf !== csrfTokenFromHeader) {
+    const error = new Error("invalid csrf token");
+    error.name = "JsonWebTokenError";
+    throw error;
+  }
+
+  // si todo está bien, añadimos la información del usuario al objeto request
+  req.user = {
+    id: decodedToken.id,
+    username: decodedToken.username,
+  };
+
+  next(); // pasamos al siguiente middleware o a la ruta
+};
+
 export default {
   unknownEndpoint,
   errorHandler,
+  auth,
 };

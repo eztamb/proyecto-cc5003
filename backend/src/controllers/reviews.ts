@@ -1,6 +1,7 @@
 import express from "express";
 import Review from "../models/review";
 import Store from "../models/store";
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
@@ -11,8 +12,7 @@ router.get("/", async (_req, res) => {
 });
 
 // post /api/reviews - crear una nueva review
-router.post("/", async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+router.post("/", middleware.auth, async (req, res) => {
   const { storeId, rating, comment, picture, userName } = req.body;
 
   const store = await Store.findById(storeId);
