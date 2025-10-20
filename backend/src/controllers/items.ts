@@ -1,6 +1,6 @@
 import express from "express";
 import Item from "../models/item";
-import Store from "../models/store"; // importamos store para verificar que exista
+import Store from "../models/store";
 import middleware from "../utils/middleware";
 
 const router = express.Router();

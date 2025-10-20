@@ -23,7 +23,6 @@ router.get("/:id", async (req, res) => {
 // post /api/stores - crear una nueva tienda
 // (más adelante, esta ruta estará protegida)
 router.post("/", middleware.auth, middleware.isAdmin, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
   const newStore = new Store({
@@ -48,7 +47,6 @@ router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
 // put /api/stores/:id - actualizar una tienda
 // (más adelante, esta ruta estará protegida)
 router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
   const storeToUpdate = {
@@ -60,11 +58,7 @@ router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
     junaeb,
   };
 
-  const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
-    storeToUpdate,
-    { new: true }, // { new: true } hace que devuelva el documento actualizado
-  );
+  const updatedStore = await Store.findByIdAndUpdate(req.params.id, storeToUpdate, { new: true });
 
   res.json(updatedStore);
 });

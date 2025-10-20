@@ -43,6 +43,23 @@ router.get("/", middleware.auth, middleware.isAdmin, async (_req, res) => {
   res.json(users);
 });
 
+router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
+  const { role } = req.body;
+  const userToUpdate = await User.findById(req.params.id);
+
+  if (!userToUpdate) {
+    return res.status(404).json({ error: "user not found" });
+  }
+
+  if (userToUpdate._id.toString() === req.user?.id) {
+    return res.status(403).json({ error: "cannot change own role" });
+  }
+
+  userToUpdate.role = role;
+  const updatedUser = await userToUpdate.save();
+  res.json(updatedUser);
+});
+
 router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
   const adminUser = req.user;
   if (adminUser?.id === req.params.id) {
