@@ -26,8 +26,8 @@ cd ..
 
 # run backend (json server)
 cd backend
-echo "Iniciando backend (json-server) en http://localhost:3000..."
-npx json-server --watch db.json --port 3000 &
+echo "Iniciando backend (express) en http://localhost:3000..."
+npm run dev &
 BACKEND_PID=$!
 cd ..
 

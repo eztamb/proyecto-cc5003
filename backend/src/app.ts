@@ -21,8 +21,7 @@ const app = express();
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error("error: MONGODB_URI is not defined in .env file");
-  process.exit(1);
+  throw new Error("MONGODB_URI is not defined in .env file");
 }
 
 mongoose
@@ -36,7 +35,10 @@ mongoose
   });
 
 // --- middlewares ---
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // url frontend
+  credentials: true, 
+}));
 app.use(express.json());
 app.use(cookieParser());
 
