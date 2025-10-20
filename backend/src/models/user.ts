@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
-interface IUser {
+export interface IUser {
   username: string;
   passwordHash: string;
+  role: "admin" | "reviewer";
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -15,6 +16,12 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: true,
   },
+  role: {
+    type: String,
+    required: true,
+    enum: ["admin", "reviewer"],
+    default: "reviewer",
+  },
 });
 
 type TransformReturnedObject = {
@@ -23,6 +30,7 @@ type TransformReturnedObject = {
   passwordHash?: string;
   id?: string;
   username: string;
+  role: "admin" | "reviewer";
 };
 
 userSchema.set("toJSON", {

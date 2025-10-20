@@ -13,7 +13,7 @@ router.get("/", async (_req, res) => {
 });
 
 // post /api/items - crear un nuevo item
-router.post("/", middleware.auth, async (req, res) => {
+router.post("/", middleware.auth, middleware.isAdmin, async (req, res) => {
   const { name, storeId, description, picture, price } = req.body;
 
   // verificamos que la tienda exista

@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/user";
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
@@ -21,9 +22,14 @@ router.post("/", async (req, res) => {
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
+  // el primer usuario registrado es admin
+  const userCount = await User.countDocuments({});
+  const role = userCount === 0 ? "admin" : "reviewer";
+
   const newUser = new User({
     username,
     passwordHash, // guardamos el hash, no la contraseña original
+    role,
   });
 
   const savedUser = await newUser.save();
@@ -32,9 +38,19 @@ router.post("/", async (req, res) => {
   return;
 });
 
-router.get("/", async (_req, res) => {
+router.get("/", middleware.auth, middleware.isAdmin, async (_req, res) => {
   const users = await User.find({});
   res.json(users);
+});
+
+router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
+  const adminUser = req.user;
+  if (adminUser?.id === req.params.id) {
+    return res.status(403).json({ error: "admin cannot delete themself" });
+  }
+
+  await User.findByIdAndDelete(req.params.id);
+  res.status(204).end();
 });
 
 export default router;
