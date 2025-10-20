@@ -29,6 +29,7 @@ router.post("/login", async (req, res) => {
   const userForToken = {
     username: user.username,
     id: user._id.toString(),
+    role: user.role,
     csrf: csrfToken, // incluimos el token csrf en el payload del jwt
   };
 
@@ -52,7 +53,7 @@ router.post("/login", async (req, res) => {
     })
     .setHeader("X-CSRF-Token", csrfToken) // enviamos el csrf token en un header
     .status(200)
-    .send({ username: user.username, id: user.id });
+    .send({ username: user.username, id: user.id, role: user.role });
 
   return;
 });
@@ -64,7 +65,7 @@ router.get("/me", middleware.auth, async (req, res) => {
     return res.status(404).json({ error: "user not found" });
   }
 
-  res.status(200).send({ username: user.username, id: user.id });
+  res.status(200).send({ username: user.username, id: user.id, role: user.role });
   return;
 });
 

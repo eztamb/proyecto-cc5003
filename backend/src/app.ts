@@ -35,10 +35,14 @@ mongoose
   });
 
 // --- middlewares ---
-app.use(cors({
-  origin: 'http://localhost:5173', // url frontend
-  credentials: true, 
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // url frontend
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+    exposedHeaders: ["X-CSRF-Token"],
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 

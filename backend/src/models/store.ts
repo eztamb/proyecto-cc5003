@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const allowedCategories = [
+  "Cafetería",
+  "Restaurante",
+  "Food Truck",
+  "Máquina Expendedora",
+  "Minimarket",
+  "Otro",
+];
+
 interface IStore {
   storeCategory: string;
   name: string;
@@ -13,6 +22,7 @@ const storeSchema = new mongoose.Schema<IStore>({
   storeCategory: {
     type: String,
     required: true,
+    enum: allowedCategories,
   },
   name: {
     type: String,

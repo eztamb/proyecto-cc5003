@@ -1,110 +1,273 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import server from "../services/server";
-import type { StoreWithRating } from "../types/types";
+import auth from "../services/auth";
+import type { StoreWithRating, User } from "../types/types";
+import {
+  Container,
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  CircularProgress,
+  Alert,
+  AppBar,
+  Toolbar,
+  Button,
+  Chip,
+  Grid,
+  Rating,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  type SelectChangeEvent,
+} from "@mui/material";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
-const StoreList: React.FC = () => {
+// Debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+interface StoreListProps {
+  user: User | null;
+  setUser: (user: User | null) => void;
+}
+
+const categories = [
+  "all",
+  "Cafetería",
+  "Restaurante",
+  "Food Truck",
+  "Máquina Expendedora",
+  "Minimarket",
+  "Otro",
+];
+
+const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
   const [stores, setStores] = useState<StoreWithRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms debounce delay
   const navigate = useNavigate();
 
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const hasHalf = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-
-    return (
-      <>
-        {[...Array(fullStars)].map((_, i) => (
-          <span key={`full-${i}`} className="star full">
-            ★
-          </span>
-        ))}
-        {hasHalf && <span className="star half">⭑</span>}
-        {[...Array(emptyStars)].map((_, i) => (
-          <span key={`empty-${i}`} className="star empty">
-            ☆
-          </span>
-        ))}
-      </>
-    );
-  };
-
-  const handleStoreSelect = (storeId: number) => {
+  const handleStoreSelect = (storeId: string) => {
     navigate(`/store/${storeId}`);
   };
 
+  const handleLogout = async () => {
+    await auth.logout();
+    setUser(null);
+    navigate("/login");
+  };
+
+  const handleCategoryChange = (event: SelectChangeEvent<string>) => {
+    setSelectedCategory(event.target.value);
+  };
+
+  const fetchStores = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filters = {
+        category: selectedCategory === "all" ? undefined : selectedCategory,
+        search: debouncedSearchTerm || undefined,
+      };
+      const data = await server.getStoresWithAverageRating(filters);
+      setStores(data);
+    } catch (err) {
+      console.error("Failed to load stores:", err);
+      setError("Error al cargar las tiendas. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategory, debouncedSearchTerm]); // Dependencies for useCallback
+
   useEffect(() => {
-    const fetchStores = async () => {
-      try {
-        const data = await server.getStoresWithAverageRating();
-        setStores(data);
-      } catch {
-        setError("Failed to load stores");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStores();
-  }, []);
-
-  if (loading) {
-    return <div className="loading">Loading stores...</div>;
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  }, [fetchStores]); // useEffect depends on the memoized fetchStores function
 
   return (
-    <div className="store-list-container">
-      <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
-      <ul className="store-list">
-        {stores.map((store) => (
-          <li 
-            key={store.id} 
-            className="store-item"
-            onClick={() => handleStoreSelect(store.id)}
-            style={{ cursor: 'pointer' }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handleStoreSelect(store.id);
-              }
-            }}
-          >
+    <>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{ bgcolor: "background.paper", borderBottom: "1px solid #684a4aff" }}
+      >
+        <Toolbar>
+          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
             <img
-                src={store.images[0]}
-                className="image"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/images/placeholder.png";
-                }}
-              />
-            <h2>{store.name}</h2>
-            {store.description && <p>{store.description}</p>}
-            <p className="location"> 📍 Ubicación: {store.location}</p>
-            <p className="category">Tipo: {store.storeCategory}</p>
-            <p className={store.junaeb ? "junaeb" : ""}>
-              {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb 😔"}
-            </p>
-            <div className="rating">
-              <span
-                className="stars"
-                role="img"
-                aria-label={`Rating: ${store.averageRating} out of 5`}
-              >
-                {renderStars(store.averageRating)}
-              </span>
-              <span className="numeric-rating">{store.averageRating.toFixed(1)}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+              src="/favicon.png"
+              alt="BeaucheFoods logo"
+              style={{ height: "32px", marginRight: "10px" }}
+            />
+            <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
+              BeaucheFoods
+            </Typography>
+          </Box>
+          {user ? (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              {user.role === "admin" && (
+                <Button color="inherit" component={Link} to="/users" sx={{ mr: 1 }}>
+                  Administrar Usuarios
+                </Button>
+              )}
+              <Button color="inherit" onClick={handleLogout} sx={{ mr: 2 }}>
+                Logout
+              </Button>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <AccountCircleIcon sx={{ mr: 1 }} />
+                <Typography component="span">
+                  {user.username} ({user.role})
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Button color="inherit" component={Link} to="/login">
+              Login
+            </Button>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Container sx={{ py: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Tiendas Disponibles
+          </Typography>
+          {user?.role === "admin" && (
+            <Button variant="contained" component={Link} to="/new-store">
+              Agregar Tienda
+            </Button>
+          )}
+        </Box>
+
+        {/* Filter and Search Bar */}
+        <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
+          <TextField
+            label="Buscar tienda..."
+            variant="outlined"
+            fullWidth
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ flexGrow: 1 }}
+          />
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel id="category-filter-label">Categoría</InputLabel>
+            <Select
+              labelId="category-filter-label"
+              value={selectedCategory}
+              label="Categoría"
+              onChange={handleCategoryChange}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category === "all" ? "Todas" : category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        {loading ? (
+          <Box
+            sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : stores.length === 0 ? (
+          <Typography>No se encontraron tiendas con los filtros aplicados.</Typography>
+        ) : (
+          <Grid container spacing={4}>
+            {stores.map((store) => (
+              <Grid item key={store.id} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+                {" "}
+                <Card
+                  sx={{ height: "100%", display: "flex", flexDirection: "column", width: "100%" }}
+                >
+                  {" "}
+                  <CardActionArea
+                    onClick={() => handleStoreSelect(store.id)}
+                    sx={{ display: "flex", flexDirection: "column", height: "100%" }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={store.images[0] || "/images/placeholder.png"}
+                      alt={store.name}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/placeholder.png";
+                      }}
+                      sx={{ flexShrink: 0 }}
+                    />
+                    <CardContent
+                      sx={{ flexGrow: 1, display: "flex", flexDirection: "column", width: "100%" }}
+                    >
+                      {" "}
+                      <Typography gutterBottom variant="h5" component="div">
+                        {store.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {store.description}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                        <LocationOnIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {store.location}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={store.storeCategory}
+                        size="small"
+                        sx={{ mb: 2, alignSelf: "flex-start" }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: store.junaeb ? "#68d391" : "#fc8181", fontWeight: "medium" }}
+                      >
+                        {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb"}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", mt: "auto", pt: 2 }}>
+                        <Rating
+                          name="read-only"
+                          value={store.averageRating}
+                          precision={0.5}
+                          readOnly
+                        />
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                          {store.averageRating != null ? store.averageRating.toFixed(1) : "N/A"}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </>
   );
 };
 

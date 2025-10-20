@@ -4,9 +4,25 @@ import middleware from "../utils/middleware";
 
 const router = express.Router();
 
-// get /api/stores - listar todas las tiendas
-router.get("/", async (_req, res) => {
-  const stores = await Store.find({});
+// get /api/stores - listar todas las tiendas (con filtros opcionales)
+router.get("/", async (req, res) => {
+  const { category, search } = req.query;
+
+  const filter: any = {};
+
+  if (category && typeof category === "string" && category !== "all") {
+    filter.storeCategory = category;
+  }
+
+  if (search && typeof search === "string") {
+    // Busca en name y description, insensible a mayúsculas/minúsculas
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const stores = await Store.find(filter);
   res.json(stores);
 });
 
@@ -21,9 +37,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // post /api/stores - crear una nueva tienda
-// (más adelante, esta ruta estará protegida)
-router.post("/", middleware.auth, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+router.post("/", middleware.auth, middleware.isAdmin, async (req, res) => {
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
   const newStore = new Store({
@@ -31,8 +45,8 @@ router.post("/", middleware.auth, async (req, res) => {
     name,
     description,
     location,
-    images: images || [], // si no vienen imágenes, se guarda un array vacío
-    junaeb: junaeb || false, // si no viene junaeb, por defecto es false
+    images: images || [],
+    junaeb: junaeb || false,
   });
 
   const savedStore = await newStore.save();
@@ -40,15 +54,13 @@ router.post("/", middleware.auth, async (req, res) => {
 });
 
 // delete /api/stores/:id - eliminar una tienda
-router.delete("/:id", middleware.auth, async (req, res) => {
+router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
   await Store.findByIdAndDelete(req.params.id);
   res.status(204).end(); // 204 no content
 });
 
 // put /api/stores/:id - actualizar una tienda
-// (más adelante, esta ruta estará protegida)
-router.put("/:id", middleware.auth, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
   const storeToUpdate = {
@@ -60,11 +72,7 @@ router.put("/:id", middleware.auth, async (req, res) => {
     junaeb,
   };
 
-  const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
-    storeToUpdate,
-    { new: true }, // { new: true } hace que devuelva el documento actualizado
-  );
+  const updatedStore = await Store.findByIdAndUpdate(req.params.id, storeToUpdate, { new: true });
 
   res.json(updatedStore);
 });

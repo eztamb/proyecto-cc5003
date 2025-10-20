@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 interface UserPayload {
   id: string;
   username: string;
+  role: "admin" | "reviewer";
 }
 
 declare global {
@@ -63,6 +64,7 @@ const auth = (req: Request, _res: Response, next: NextFunction) => {
   const decodedToken = jwt.verify(token, JWT_SECRET) as {
     id: string;
     username: string;
+    role: "admin" | "reviewer";
     csrf: string;
   };
 
@@ -77,13 +79,22 @@ const auth = (req: Request, _res: Response, next: NextFunction) => {
   req.user = {
     id: decodedToken.id,
     username: decodedToken.username,
+    role: decodedToken.role,
   };
 
   next(); // pasamos al siguiente middleware o a la ruta
+};
+
+const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "operation not permitted" });
+  }
+  next();
 };
 
 export default {
   unknownEndpoint,
   errorHandler,
   auth,
+  isAdmin,
 };

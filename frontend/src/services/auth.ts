@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = "http://localhost:3001/api";
 
 interface LoginCredentials {
   username: string;
@@ -15,17 +15,21 @@ interface SignupCredentials {
 interface User {
   username: string;
   id: string;
+  role: "admin" | "reviewer";
 }
 
-let csrfToken: string | null = null;
+const CSRF_TOKEN_KEY = "csrfToken";
 
 const login = async (credentials: LoginCredentials): Promise<User> => {
   const response = await axios.post(`${API_URL}/auth/login`, credentials, {
     withCredentials: true, // enviar cookies
   });
-  
-  csrfToken = response.headers['x-csrf-token'];
-  
+
+  const token = response.headers["x-csrf-token"];
+  if (token) {
+    localStorage.setItem(CSRF_TOKEN_KEY, token);
+  }
+
   return response.data;
 };
 
@@ -35,27 +39,36 @@ const signup = async (credentials: SignupCredentials): Promise<User> => {
 };
 
 const logout = async (): Promise<void> => {
-  await axios.post(`${API_URL}/auth/logout`, {}, {
-    withCredentials: true,
-    headers: {
-      'X-CSRF-Token': csrfToken || '',
+  const csrfToken = getCsrfToken();
+  await axios.post(
+    `${API_URL}/auth/logout`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        "X-CSRF-Token": csrfToken || "",
+      },
     },
-  });
-  csrfToken = null;
+  );
+  localStorage.removeItem(CSRF_TOKEN_KEY);
 };
 
 const getCurrentUser = async (): Promise<User> => {
+  const csrfToken = getCsrfToken();
+  if (!csrfToken) {
+    return Promise.reject("No CSRF token found");
+  }
   const response = await axios.get(`${API_URL}/auth/me`, {
     withCredentials: true,
     headers: {
-      'X-CSRF-Token': csrfToken || '',
+      "X-CSRF-Token": csrfToken,
     },
   });
   return response.data;
 };
 
 const getCsrfToken = (): string | null => {
-  return csrfToken;
+  return localStorage.getItem(CSRF_TOKEN_KEY);
 };
 
 export default {

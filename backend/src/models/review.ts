@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
+import { IUser } from "./user";
 
 interface IReview {
   store: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId | IUser;
   rating: number;
   comment: string;
   picture?: string;
@@ -12,6 +14,11 @@ const reviewSchema = new mongoose.Schema<IReview>({
   store: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Store",
+    required: true,
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   rating: {
@@ -37,6 +44,7 @@ type TransformReturnedObject = {
   __v?: number;
   id?: string;
   store: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId | IUser;
   rating: number;
   comment: string;
   picture?: string;
