@@ -31,7 +31,7 @@ const StoreList: React.FC = () => {
     );
   };
 
-  const handleStoreSelect = (storeId: number) => {
+  const handleStoreSelect = (storeId: string) => {
     navigate(`/store/${storeId}`);
   };
 
@@ -63,27 +63,27 @@ const StoreList: React.FC = () => {
       <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
       <ul className="store-list">
         {stores.map((store) => (
-          <li 
-            key={store.id} 
+          <li
+            key={store.id}
             className="store-item"
             onClick={() => handleStoreSelect(store.id)}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 handleStoreSelect(store.id);
               }
             }}
           >
             <img
-                src={store.images[0]}
-                className="image"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/images/placeholder.png";
-                }}
-              />
+              src={store.images[0]}
+              className="image"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/placeholder.png";
+              }}
+            />
             <h2>{store.name}</h2>
             {store.description && <p>{store.description}</p>}
             <p className="location"> 📍 Ubicación: {store.location}</p>

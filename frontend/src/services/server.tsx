@@ -5,47 +5,60 @@ import type {
   StoreReview,
   StoreWithDetails,
   StoreWithRating,
+  NewReview,
 } from "../types/types";
+import auth from "./auth";
 
-const baseUrl = "http://localhost:3000/";
+const baseUrl = "http://localhost:3001/api";
 
 const getAllStores = (): Promise<Store[]> => {
-  return axios.get(`${baseUrl}stores`).then((response) => response.data);
+  return axios.get(`${baseUrl}/stores`).then((response) => response.data);
 };
 
-const getStoreById = (id: number): Promise<Store> => {
-  return axios.get(`${baseUrl}stores/${id}`).then((response) => response.data);
+const getStoreById = (id: string): Promise<Store> => {
+  return axios.get(`${baseUrl}/stores/${id}`).then((response) => response.data);
 };
 
 const getAllStoreItems = (): Promise<StoreItem[]> => {
-  return axios.get(`${baseUrl}storeItems`).then((response) => response.data);
+  return axios.get(`${baseUrl}/items`).then((response) => response.data);
 };
 
-const getStoreItemsByStoreId = (storeId: number): Promise<StoreItem[]> => {
-  return axios.get(`${baseUrl}storeItems?storeId=${storeId}`).then((response) => response.data);
+const getStoreItemsByStoreId = async (storeId: string): Promise<StoreItem[]> => {
+  const allItems = await getAllStoreItems();
+  return allItems.filter((item) => item.store.id === storeId);
 };
 
-const getStoreItemById = (id: number): Promise<StoreItem> => {
-  return axios.get(`${baseUrl}storeItems/${id}`).then((response) => response.data);
+const getStoreItemById = (id: string): Promise<StoreItem> => {
+  return axios.get(`${baseUrl}/items/${id}`).then((response) => response.data);
 };
 
 const getAllStoreReviews = (): Promise<StoreReview[]> => {
-  return axios.get(`${baseUrl}storeReviews`).then((response) => response.data);
+  return axios.get(`${baseUrl}/reviews`).then((response) => response.data);
 };
 
-const getStoreReviewsByStoreId = (storeId: number): Promise<StoreReview[]> => {
-  return axios.get(`${baseUrl}storeReviews?storeId=${storeId}`).then((response) => response.data);
+const getStoreReviewsByStoreId = async (storeId: string): Promise<StoreReview[]> => {
+  const allReviews = await getAllStoreReviews();
+  return allReviews.filter((review) => review.store.id === storeId);
 };
 
-const getStoreReviewById = (id: number): Promise<StoreReview> => {
-  return axios.get(`${baseUrl}storeReviews/${id}`).then((response) => response.data);
+const getStoreReviewById = (id: string): Promise<StoreReview> => {
+  return axios.get(`${baseUrl}/reviews/${id}`).then((response) => response.data);
 };
 
-const createStoreReview = (review: Omit<StoreReview, "id">): Promise<StoreReview> => {
-  return axios.post(`${baseUrl}storeReviews`, review).then((response) => response.data);
+const createStoreReview = (review: NewReview): Promise<StoreReview> => {
+  const csrfToken = auth.getCsrfToken();
+
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+
+  return axios.post(`${baseUrl}/reviews`, review, config).then((response) => response.data);
 };
 
-const getStoreWithDetails = (storeId: number): Promise<StoreWithDetails> => {
+const getStoreWithDetails = (storeId: string): Promise<StoreWithDetails> => {
   return Promise.all([
     getStoreById(storeId),
     getStoreItemsByStoreId(storeId),
@@ -61,7 +74,7 @@ const getStoreWithDetails = (storeId: number): Promise<StoreWithDetails> => {
         ...store,
         items,
         reviews,
-        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+        averageRating: Math.round(averageRating * 10) / 10,
       };
     })
     .catch((error) => {
@@ -73,9 +86,7 @@ const getStoresWithAverageRating = (): Promise<StoreWithRating[]> => {
   return Promise.all([getAllStores(), getAllStoreReviews()])
     .then(([stores, reviews]) => {
       return stores.map((store) => {
-        const storeReviews = reviews.filter(
-          (review) => Number(review.storeId) === Number(store.id),
-        );
+        const storeReviews = reviews.filter((review) => review.store.id === store.id);
 
         const averageRating =
           storeReviews.length > 0
@@ -84,7 +95,7 @@ const getStoresWithAverageRating = (): Promise<StoreWithRating[]> => {
 
         return {
           ...store,
-          averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+          averageRating: Math.round(averageRating * 10) / 10,
         };
       });
     })
