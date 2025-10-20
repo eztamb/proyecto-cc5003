@@ -87,7 +87,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
           <Rating
             name="simple-controlled"
             value={rating}
-            onChange={(event, newValue) => {
+            onChange={(_event, newValue) => {
               setRating(newValue);
             }}
           />

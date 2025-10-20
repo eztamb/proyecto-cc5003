@@ -11,6 +11,7 @@ import {
   Alert,
   Link,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 
 interface LoginProps {
@@ -23,6 +24,11 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleGuestLogin = () => {
+    setUser(null);
+    navigate("/");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +91,16 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
           <Link component={RouterLink} to="/signup" variant="body2">
             ¿No tienes cuenta? Regístrate aquí
           </Link>
+          <Divider sx={{ my: 2 }}>O</Divider>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleGuestLogin}
+            disabled={loading}
+            sx={{ mb: 4 }}
+          >
+            Continuar como invitado
+          </Button>
         </Box>
       </Box>
     </Container>

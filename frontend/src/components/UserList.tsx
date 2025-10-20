@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import server from "../services/server";
 import type { User } from "../types/types";
 import {
@@ -18,6 +19,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 interface UserListProps {
   user: User | null;
@@ -27,6 +29,7 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -82,9 +85,14 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
 
   return (
     <Container className="py-8">
-      <Typography variant="h4" component="h1" gutterBottom>
-        Administrar Usuarios
-      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Typography variant="h4" component="h1">
+          Administrar Usuarios
+        </Typography>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/")}>
+          Volver
+        </Button>
+      </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>

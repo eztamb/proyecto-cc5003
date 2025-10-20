@@ -77,7 +77,7 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
   const handleLogout = async () => {
     await auth.logout();
     setUser(null);
-    navigate("/"); // Redirect to home after logout might be better
+    navigate("/login");
   };
 
   const handleCategoryChange = (event: SelectChangeEvent<string>) => {
@@ -200,9 +200,16 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
         ) : (
           <Grid container spacing={4}>
             {stores.map((store) => (
-              <Grid item key={store.id} xs={12} sm={6} md={4}>
-                <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                  <CardActionArea onClick={() => handleStoreSelect(store.id)}>
+              <Grid item key={store.id} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+                {" "}
+                <Card
+                  sx={{ height: "100%", display: "flex", flexDirection: "column", width: "100%" }}
+                >
+                  {" "}
+                  <CardActionArea
+                    onClick={() => handleStoreSelect(store.id)}
+                    sx={{ display: "flex", flexDirection: "column", height: "100%" }}
+                  >
                     <CardMedia
                       component="img"
                       height="200"
@@ -212,8 +219,12 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/images/placeholder.png";
                       }}
+                      sx={{ flexShrink: 0 }}
                     />
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent
+                      sx={{ flexGrow: 1, display: "flex", flexDirection: "column", width: "100%" }}
+                    >
+                      {" "}
                       <Typography gutterBottom variant="h5" component="div">
                         {store.name}
                       </Typography>
@@ -226,7 +237,11 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
                           {store.location}
                         </Typography>
                       </Box>
-                      <Chip label={store.storeCategory} size="small" sx={{ mb: 2 }} />
+                      <Chip
+                        label={store.storeCategory}
+                        size="small"
+                        sx={{ mb: 2, alignSelf: "flex-start" }}
+                      />
                       <Typography
                         variant="body2"
                         sx={{ color: store.junaeb ? "#68d391" : "#fc8181", fontWeight: "medium" }}
