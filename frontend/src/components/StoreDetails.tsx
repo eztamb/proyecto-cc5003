@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import server from "../services/server";
-import type { StoreWithDetails, StoreReview } from "../types/types";
+import type { StoreWithDetails, StoreReview, User } from "../types/types";
 import ReviewForm from "./ReviewForm";
 
-const StoreDetails: React.FC = () => {
+interface StoreDetailsProps {
+  user: User | null;
+}
+
+const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const [store, setStore] = useState<StoreWithDetails | null>(null);
@@ -55,6 +59,27 @@ const StoreDetails: React.FC = () => {
 
   const handleCancelReview = () => {
     setShowReviewForm(false);
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!store) return;
+    try {
+      await server.deleteStoreReview(reviewId);
+      const updatedReviews = store.reviews.filter((r) => r.id !== reviewId);
+      const newAverageRating =
+        updatedReviews.length > 0
+          ? updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length
+          : 0;
+
+      setStore({
+        ...store,
+        reviews: updatedReviews,
+        averageRating: Math.round(newAverageRating * 10) / 10,
+      });
+    } catch (err) {
+      console.error("Failed to delete review", err);
+      setError("Failed to delete review");
+    }
   };
 
   useEffect(() => {
@@ -159,18 +184,28 @@ const StoreDetails: React.FC = () => {
         </div>
       )}
 
-      {store.reviews && store.reviews.length > 0 ? (
-        <div>
-          <h2>Reseñas</h2>
+      <div>
+        <h2>Reseñas</h2>
+        {user && (
+          <button className="add-review-button" onClick={() => setShowReviewForm(true)}>
+            ➕ Agregar Reseña
+          </button>
+        )}
+        {store.reviews && store.reviews.length > 0 ? (
           <div className="review-container">
             {store.reviews.map((review) => (
               <div key={review.id} className="review-item">
-                <div>
-                  <h4>{review.userName || "Anónimo"}</h4>
-                  <div className="review-rating">
-                    {renderStars(review.rating)}
-                    <span className="numeric-rating">({review.rating})</span>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div>
+                    <h4>{review.userName || "Anónimo"}</h4>
+                    <div className="review-rating">
+                      {renderStars(review.rating)}
+                      <span className="numeric-rating">({review.rating})</span>
+                    </div>
                   </div>
+                  {user && (user.role === "admin" || user.id === review.user.id) && (
+                    <button onClick={() => handleDeleteReview(review.id)}>Eliminar</button>
+                  )}
                 </div>
                 <p className="review-comment">{review.comment}</p>
                 {review.picture && (
@@ -186,25 +221,17 @@ const StoreDetails: React.FC = () => {
               </div>
             ))}
           </div>
-          <button className="add-review-button" onClick={() => setShowReviewForm(true)}>
-            ➕ Agregar Reseña
-          </button>
-        </div>
-      ) : (
-        <div>
-          <h2>Reseñas</h2>
+        ) : (
           <p className="no-reviews">¡Sé el primero en dejar una reseña!</p>
-          <button className="add-review-button" onClick={() => setShowReviewForm(true)}>
-            Agregar Reseña
-          </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {showReviewForm && (
         <ReviewForm
           storeId={storeId}
           onReviewAdded={handleReviewAdded}
           onCancel={handleCancelReview}
+          user={user}
         />
       )}
     </div>

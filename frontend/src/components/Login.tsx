@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import auth from '../services/auth';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import auth from "../services/auth";
+import type { User } from "../types/types";
 
-const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+interface LoginProps {
+  setUser: (user: User | null) => void;
+}
+
+const Login: React.FC<LoginProps> = ({ setUser }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,11 +20,12 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await auth.login({ username, password });
-      navigate('/'); 
+      const loggedInUser = await auth.login({ username, password });
+      setUser(loggedInUser);
+      navigate("/");
     } catch (err) {
-      setError('Invalid username or password');
-      console.error('Login error:', err);
+      setError("Invalid username or password");
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
@@ -59,7 +65,7 @@ const Login: React.FC = () => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" disabled={loading} className="auth-button">
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>
 

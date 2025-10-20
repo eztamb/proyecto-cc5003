@@ -1,3 +1,9 @@
+export interface User {
+  id: string;
+  username: string;
+  role: "admin" | "reviewer";
+}
+
 export interface Store {
   id: string;
   storeCategory: string;
@@ -38,6 +44,10 @@ export interface NewReview {
 export interface StoreReview {
   id: string;
   store: StoreReference;
+  user: {
+    id: string;
+    username: string;
+  };
   rating: number;
   comment: string;
   userName?: string;

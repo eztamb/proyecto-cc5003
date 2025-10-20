@@ -58,6 +58,19 @@ const createStoreReview = (review: NewReview): Promise<StoreReview> => {
   return axios.post(`${baseUrl}/reviews`, review, config).then((response) => response.data);
 };
 
+const deleteStoreReview = (id: string): Promise<void> => {
+  const csrfToken = auth.getCsrfToken();
+
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+
+  return axios.delete(`${baseUrl}/reviews/${id}`, config).then(() => undefined);
+};
+
 const getStoreWithDetails = (storeId: string): Promise<StoreWithDetails> => {
   return Promise.all([
     getStoreById(storeId),
@@ -117,6 +130,7 @@ export default {
   getStoreReviewsByStoreId,
   getStoreReviewById,
   createStoreReview,
+  deleteStoreReview,
 
   getStoreWithDetails,
 };

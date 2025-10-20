@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = "http://localhost:3001/api";
 
 interface LoginCredentials {
   username: string;
@@ -15,6 +15,7 @@ interface SignupCredentials {
 interface User {
   username: string;
   id: string;
+  role: "admin" | "reviewer";
 }
 
 let csrfToken: string | null = null;
@@ -23,9 +24,9 @@ const login = async (credentials: LoginCredentials): Promise<User> => {
   const response = await axios.post(`${API_URL}/auth/login`, credentials, {
     withCredentials: true, // enviar cookies
   });
-  
-  csrfToken = response.headers['x-csrf-token'];
-  
+
+  csrfToken = response.headers["x-csrf-token"];
+
   return response.data;
 };
 
@@ -35,12 +36,16 @@ const signup = async (credentials: SignupCredentials): Promise<User> => {
 };
 
 const logout = async (): Promise<void> => {
-  await axios.post(`${API_URL}/auth/logout`, {}, {
-    withCredentials: true,
-    headers: {
-      'X-CSRF-Token': csrfToken || '',
+  await axios.post(
+    `${API_URL}/auth/logout`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        "X-CSRF-Token": csrfToken || "",
+      },
     },
-  });
+  );
   csrfToken = null;
 };
 
@@ -48,7 +53,7 @@ const getCurrentUser = async (): Promise<User> => {
   const response = await axios.get(`${API_URL}/auth/me`, {
     withCredentials: true,
     headers: {
-      'X-CSRF-Token': csrfToken || '',
+      "X-CSRF-Token": csrfToken || "",
     },
   });
   return response.data;

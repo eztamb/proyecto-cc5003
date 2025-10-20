@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import server from "../services/server";
-import type { StoreWithRating } from "../types/types";
+import auth from "../services/auth";
+import type { StoreWithRating, User } from "../types/types";
 
-const StoreList: React.FC = () => {
+interface StoreListProps {
+  user: User | null;
+  setUser: (user: User | null) => void;
+}
+
+const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
   const [stores, setStores] = useState<StoreWithRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +41,12 @@ const StoreList: React.FC = () => {
     navigate(`/store/${storeId}`);
   };
 
+  const handleLogout = async () => {
+    await auth.logout();
+    setUser(null);
+    navigate("/");
+  };
+
   useEffect(() => {
     const fetchStores = async () => {
       try {
@@ -60,7 +72,23 @@ const StoreList: React.FC = () => {
 
   return (
     <div className="store-list-container">
-      <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
+        {user ? (
+          <div>
+            <span>
+              Hola, {user.username} ({user.role})
+            </span>
+            <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link to="/login">
+            <button>Login</button>
+          </Link>
+        )}
+      </div>
       <ul className="store-list">
         {stores.map((store) => (
           <li

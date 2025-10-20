@@ -1,20 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import server from "../services/server";
-import type { StoreReview } from "../types/types";
+import type { StoreReview, User } from "../types/types";
 
 interface ReviewFormProps {
   storeId?: string;
   onReviewAdded: (review: StoreReview) => void;
   onCancel: () => void;
+  user: User | null;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCancel }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCancel, user }) => {
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const [picture, setPicture] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setUserName(user.username);
+    }
+  }, [user]);
 
   if (!storeId) {
     return;
