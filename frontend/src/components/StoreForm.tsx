@@ -12,7 +12,21 @@ import {
   Alert,
   Checkbox,
   FormControlLabel,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  type SelectChangeEvent,
 } from "@mui/material";
+
+const categories = [
+  "Cafetería",
+  "Restaurante",
+  "Food Truck",
+  "Máquina Expendedora",
+  "Minimarket",
+  "Otro",
+];
 
 const StoreForm: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -28,6 +42,7 @@ const StoreForm: React.FC = () => {
 
   useEffect(() => {
     if (storeId) {
+      setLoading(true); // Start loading when fetching existing store data
       const fetchStore = async () => {
         try {
           const store = await server.getStoreById(storeId);
@@ -39,6 +54,8 @@ const StoreForm: React.FC = () => {
           setJunaeb(store.junaeb);
         } catch {
           setError("Error al cargar la tienda");
+        } finally {
+          setLoading(false); // Stop loading after fetching or error
         }
       };
       fetchStore();
@@ -55,7 +72,8 @@ const StoreForm: React.FC = () => {
       description,
       location,
       storeCategory,
-      images,
+      // Filter out empty strings from images array
+      images: images.map((img) => img.trim()).filter((img) => img !== ""),
       junaeb,
     };
 
@@ -68,15 +86,19 @@ const StoreForm: React.FC = () => {
       navigate("/");
     } catch {
       setError("Error al guardar la tienda");
-    } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading stops on error
     }
+    // No need for finally here as navigate will unmount the component
+  };
+
+  const handleCategoryChange = (event: SelectChangeEvent<string>) => {
+    setStoreCategory(event.target.value as string);
   };
 
   return (
     <Container component="main" maxWidth="sm">
       <Box className="mt-8 flex flex-col items-center">
-        <Typography component="h1" variant="h4">
+        <Typography component="h1" variant="h4" sx={{ mb: 3 }}>
           {storeId ? "Editar Tienda" : "Agregar Tienda"}
         </Typography>
         <Box component="form" onSubmit={handleSubmit} className="w-full mt-4">
@@ -109,22 +131,31 @@ const StoreForm: React.FC = () => {
             onChange={(e) => setLocation(e.target.value)}
             disabled={loading}
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Categoría"
-            value={storeCategory}
-            onChange={(e) => setStoreCategory(e.target.value)}
-            disabled={loading}
-          />
+          <FormControl fullWidth margin="normal" required disabled={loading}>
+            <InputLabel id="category-select-label">Categoría</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={storeCategory}
+              label="Categoría"
+              onChange={handleCategoryChange}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             margin="normal"
             fullWidth
             label="Imágenes (URL separadas por comas)"
             value={images.join(",")}
-            onChange={(e) => setImages(e.target.value.split(","))}
+            // Split by comma, trim whitespace, and update state
+            onChange={(e) => setImages(e.target.value.split(",").map((s) => s.trim()))}
             disabled={loading}
+            helperText="Separe múltiples URLs con comas."
           />
           <FormControlLabel
             control={
@@ -135,6 +166,7 @@ const StoreForm: React.FC = () => {
               />
             }
             label="Acepta Junaeb"
+            sx={{ display: "block", mt: 1 }}
           />
           {error && (
             <Alert severity="error" className="w-full mt-2">
@@ -147,8 +179,18 @@ const StoreForm: React.FC = () => {
             variant="contained"
             className="mt-4 mb-2"
             disabled={loading}
+            sx={{ mt: 3, mb: 2, py: 1.5 }}
           >
             {loading ? <CircularProgress size={24} /> : "Guardar Tienda"}
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => navigate("/")}
+            disabled={loading}
+            sx={{ mb: 4 }}
+          >
+            Cancelar
           </Button>
         </Box>
       </Box>

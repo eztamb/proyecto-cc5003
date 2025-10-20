@@ -43,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box className="mt-8 flex flex-col items-center">
+      <Box className="mt-8 flex flex-col items-center text-center">
         <Typography component="h1" variant="h4" className="font-bold">
           🌯 Iniciar Sesión
         </Typography>
@@ -79,13 +79,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
               {error}
             </Alert>
           )}
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            className="mt-4 mb-2 bg-primary-orange"
-            disabled={loading}
-          >
+          <Button type="submit" fullWidth variant="contained" sx={{ my: 2 }} disabled={loading}>
             {loading ? <CircularProgress size={24} color="inherit" /> : "Iniciar Sesión"}
           </Button>
           <Link component={RouterLink} to="/signup" variant="body2">

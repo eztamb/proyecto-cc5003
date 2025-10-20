@@ -14,8 +14,13 @@ import auth from "./auth";
 
 const baseUrl = "http://localhost:3001/api";
 
-const getAllStores = (): Promise<Store[]> => {
-  return axios.get(`${baseUrl}/stores`).then((response) => response.data);
+interface StoreFilters {
+  category?: string;
+  search?: string;
+}
+
+const getAllStores = (filters?: StoreFilters): Promise<Store[]> => {
+  return axios.get(`${baseUrl}/stores`, { params: filters }).then((response) => response.data);
 };
 
 const getStoreById = (id: string): Promise<Store> => {
@@ -60,6 +65,7 @@ const getAllStoreItems = (): Promise<StoreItem[]> => {
 };
 
 const getStoreItemsByStoreId = async (storeId: string): Promise<StoreItem[]> => {
+  // Nota: Este filtrado sigue siendo local, podría optimizarse si la API lo permite
   const allItems = await getAllStoreItems();
   return allItems.filter((item) => item.store.id === storeId);
 };
@@ -84,6 +90,7 @@ const getAllStoreReviews = (): Promise<StoreReview[]> => {
 };
 
 const getStoreReviewsByStoreId = async (storeId: string): Promise<StoreReview[]> => {
+  // Nota: Este filtrado sigue siendo local, podría optimizarse si la API lo permite
   const allReviews = await getAllStoreReviews();
   return allReviews.filter((review) => review.store.id === storeId);
 };
@@ -142,9 +149,11 @@ const getStoreWithDetails = (storeId: string): Promise<StoreWithDetails> => {
     });
 };
 
-const getStoresWithAverageRating = (): Promise<StoreWithRating[]> => {
-  return Promise.all([getAllStores(), getAllStoreReviews()])
+const getStoresWithAverageRating = (filters?: StoreFilters): Promise<StoreWithRating[]> => {
+  // Ahora la llamada a getAllStores incluye los filtros
+  return Promise.all([getAllStores(filters), getAllStoreReviews()])
     .then(([stores, reviews]) => {
+      // El resto de la lógica para calcular el rating promedio se mantiene
       return stores.map((store) => {
         const storeReviews = reviews.filter((review) => review.store.id === store.id);
 

@@ -66,7 +66,7 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box className="mt-8 flex flex-col items-center">
+      <Box className="mt-8 flex flex-col items-center text-center">
         <Typography component="h1" variant="h4" className="font-bold">
           🍔 Crear Cuenta
         </Typography>
@@ -114,13 +114,7 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
               {error}
             </Alert>
           )}
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            className="mt-4 mb-2"
-            disabled={loading}
-          >
+          <Button type="submit" fullWidth variant="contained" sx={{ my: 2 }} disabled={loading}>
             {loading ? <CircularProgress size={24} color="inherit" /> : "Registrarse"}
           </Button>
           <Link component={RouterLink} to="/login" variant="body2">
