@@ -2,6 +2,19 @@ import { Request, Response, NextFunction } from "express";
 import { MongoServerError } from "mongodb";
 import jwt from "jsonwebtoken";
 
+interface UserPayload {
+  id: string;
+  username: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserPayload;
+    }
+  }
+}
+
 // este middleware captura las peticiones a rutas no existentes
 const unknownEndpoint = (_req: Request, res: Response) => {
   res.status(404).send({ error: "unknown endpoint" });
