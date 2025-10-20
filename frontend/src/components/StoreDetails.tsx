@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import server from "../services/server";
-import type { StoreWithDetails, StoreReview, User } from "../types/types";
+import type { StoreWithDetails, StoreReview, User, StoreItem } from "../types/types";
 import ReviewForm from "./ReviewForm";
+import ItemForm from "./ItemForm";
 
 interface StoreDetailsProps {
   user: User | null;
@@ -15,6 +16,7 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showItemForm, setShowItemForm] = useState(false);
 
   const handleBack = () => {
     navigate("/");
@@ -57,8 +59,22 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
     setShowReviewForm(false);
   };
 
+  const handleItemAdded = (newItem: StoreItem) => {
+    if (store) {
+      setStore({
+        ...store,
+        items: [...store.items, newItem],
+      });
+    }
+    setShowItemForm(false);
+  };
+
   const handleCancelReview = () => {
     setShowReviewForm(false);
+  };
+
+  const handleCancelItem = () => {
+    setShowItemForm(false);
   };
 
   const handleDeleteReview = async (reviewId: string) => {
@@ -79,6 +95,17 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
     } catch (err) {
       console.error("Failed to delete review", err);
       setError("Failed to delete review");
+    }
+  };
+
+  const handleDeleteStore = async () => {
+    if (store && window.confirm(`¿Estás seguro de que quieres eliminar ${store.name}?`)) {
+      try {
+        await server.deleteStore(store.id);
+        navigate("/");
+      } catch {
+        setError("Error al eliminar la tienda");
+      }
     }
   };
 
@@ -153,12 +180,26 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
             </span>
             <span className="numeric-rating">{store.averageRating.toFixed(1)}</span>
           </div>
+
+          {user?.role === "admin" && (
+            <div>
+              <Link to={`/edit-store/${store.id}`}>
+                <button>Editar Tienda</button>
+              </Link>
+              <button onClick={handleDeleteStore}>Eliminar Tienda</button>
+            </div>
+          )}
         </div>
       </div>
 
-      {store.items && store.items.length > 0 && (
-        <div>
-          <h2>Productos</h2>
+      <div>
+        <h2>Productos</h2>
+        {user?.role === "admin" && (
+          <button className="add-review-button" onClick={() => setShowItemForm(true)}>
+            ➕ Agregar Item
+          </button>
+        )}
+        {store.items && store.items.length > 0 ? (
           <div className="product-container">
             {store.items.map((item) => (
               <div key={item.id} className="product-item">
@@ -181,8 +222,10 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p>No hay items en esta tienda.</p>
+        )}
+      </div>
 
       <div>
         <h2>Reseñas</h2>
@@ -233,6 +276,9 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
           onCancel={handleCancelReview}
           user={user}
         />
+      )}
+      {showItemForm && storeId && (
+        <ItemForm storeId={storeId} onItemAdded={handleItemAdded} onCancel={handleCancelItem} />
       )}
     </div>
   );

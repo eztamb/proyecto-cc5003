@@ -14,6 +14,15 @@ export interface Store {
   junaeb: boolean;
 }
 
+export interface NewStore {
+  storeCategory: string;
+  name: string;
+  description: string;
+  location: string;
+  images: string[];
+  junaeb: boolean;
+}
+
 export interface StoreWithRating extends Store {
   averageRating: number;
 }
@@ -28,6 +37,14 @@ export interface StoreItem {
   id: string;
   name: string;
   store: StoreReference;
+  description: string;
+  picture: string;
+  price: number;
+}
+
+export interface NewItem {
+  name: string;
+  storeId: string;
   description: string;
   picture: string;
   price: number;

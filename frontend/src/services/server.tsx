@@ -6,6 +6,9 @@ import type {
   StoreWithDetails,
   StoreWithRating,
   NewReview,
+  NewStore,
+  NewItem,
+  User,
 } from "../types/types";
 import auth from "./auth";
 
@@ -19,6 +22,39 @@ const getStoreById = (id: string): Promise<Store> => {
   return axios.get(`${baseUrl}/stores/${id}`).then((response) => response.data);
 };
 
+const createStore = (store: NewStore): Promise<Store> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.post(`${baseUrl}/stores`, store, config).then((response) => response.data);
+};
+
+const updateStore = (id: string, store: NewStore): Promise<Store> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.put(`${baseUrl}/stores/${id}`, store, config).then((response) => response.data);
+};
+
+const deleteStore = (id: string): Promise<void> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.delete(`${baseUrl}/stores/${id}`, config).then(() => undefined);
+};
+
 const getAllStoreItems = (): Promise<StoreItem[]> => {
   return axios.get(`${baseUrl}/items`).then((response) => response.data);
 };
@@ -30,6 +66,17 @@ const getStoreItemsByStoreId = async (storeId: string): Promise<StoreItem[]> => 
 
 const getStoreItemById = (id: string): Promise<StoreItem> => {
   return axios.get(`${baseUrl}/items/${id}`).then((response) => response.data);
+};
+
+const createStoreItem = (item: NewItem): Promise<StoreItem> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.post(`${baseUrl}/items`, item, config).then((response) => response.data);
 };
 
 const getAllStoreReviews = (): Promise<StoreReview[]> => {
@@ -117,14 +164,51 @@ const getStoresWithAverageRating = (): Promise<StoreWithRating[]> => {
     });
 };
 
+const getAllUsers = (): Promise<User[]> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.get(`${baseUrl}/users`, config).then((response) => response.data);
+};
+
+const updateUserRole = (id: string, role: "admin" | "reviewer"): Promise<User> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.put(`${baseUrl}/users/${id}`, { role }, config).then((response) => response.data);
+};
+
+const deleteUser = (id: string): Promise<void> => {
+  const csrfToken = auth.getCsrfToken();
+  const config = {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+  return axios.delete(`${baseUrl}/users/${id}`, config).then(() => undefined);
+};
+
 export default {
   getAllStores,
   getStoreById,
+  createStore,
+  updateStore,
+  deleteStore,
   getStoresWithAverageRating,
 
   getAllStoreItems,
   getStoreItemsByStoreId,
   getStoreItemById,
+  createStoreItem,
 
   getAllStoreReviews,
   getStoreReviewsByStoreId,
@@ -133,4 +217,8 @@ export default {
   deleteStoreReview,
 
   getStoreWithDetails,
+
+  getAllUsers,
+  updateUserRole,
+  deleteUser,
 };

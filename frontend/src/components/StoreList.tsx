@@ -74,64 +74,82 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
     <div className="store-list-container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
-        {user ? (
-          <div>
-            <span>
-              Hola, {user.username} ({user.role})
-            </span>
-            <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
-              Logout
-            </button>
-          </div>
-        ) : (
-          <Link to="/login">
-            <button>Login</button>
-          </Link>
-        )}
-      </div>
-      <ul className="store-list">
-        {stores.map((store) => (
-          <li
-            key={store.id}
-            className="store-item"
-            onClick={() => handleStoreSelect(store.id)}
-            style={{ cursor: "pointer" }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                handleStoreSelect(store.id);
-              }
-            }}
-          >
-            <img
-              src={store.images[0]}
-              className="image"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/images/placeholder.png";
-              }}
-            />
-            <h2>{store.name}</h2>
-            {store.description && <p>{store.description}</p>}
-            <p className="location"> 📍 Ubicación: {store.location}</p>
-            <p className="category">Tipo: {store.storeCategory}</p>
-            <p className={store.junaeb ? "junaeb" : ""}>
-              {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb 😔"}
-            </p>
-            <div className="rating">
-              <span
-                className="stars"
-                role="img"
-                aria-label={`Rating: ${store.averageRating} out of 5`}
-              >
-                {renderStars(store.averageRating)}
+        <div>
+          {user ? (
+            <div>
+              <span>
+                Hola, {user.username} ({user.role})
               </span>
-              <span className="numeric-rating">{store.averageRating.toFixed(1)}</span>
+              {user.role === "admin" && (
+                <Link to="/users" style={{ marginLeft: "10px" }}>
+                  <button>Administrar Usuarios</button>
+                </Link>
+              )}
+              <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+                Logout
+              </button>
             </div>
-          </li>
-        ))}
-      </ul>
+          ) : (
+            <Link to="/login">
+              <button>Login</button>
+            </Link>
+          )}
+        </div>
+      </div>
+      {user?.role === "admin" && (
+        <Link to="/new-store">
+          <button style={{ marginBottom: "20px" }}>Agregar Tienda</button>
+        </Link>
+      )}
+      {stores.length === 0 ? (
+        <div>
+          <p>No hay tiendas disponibles en este momento.</p>
+        </div>
+      ) : (
+        <ul className="store-list">
+          {stores.map((store) => (
+            <li
+              key={store.id}
+              className="store-item"
+              onClick={() => handleStoreSelect(store.id)}
+              style={{ cursor: "pointer" }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleStoreSelect(store.id);
+                }
+              }}
+            >
+              <img
+                src={store.images[0]}
+                className="image"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/placeholder.png";
+                }}
+              />
+              <h2>{store.name}</h2>
+              {store.description && <p>{store.description}</p>}
+              <p className="location"> 📍 Ubicación: {store.location}</p>
+              <p className="category">Tipo: {store.storeCategory}</p>
+              <p className={store.junaeb ? "junaeb" : ""}>
+                {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb 😔"}
+              </p>
+              <div className="rating">
+                <span
+                  className="stars"
+                  role="img"
+                  aria-label={`Rating: ${store.averageRating} out of 5`}
+                >
+                  {renderStars(store.averageRating)}
+                </span>
+                <span className="numeric-rating">{store.averageRating.toFixed(1)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
