@@ -1,12 +1,25 @@
 import React, { useState } from "react";
 import server from "../services/server";
 import type { StoreItem, NewItem } from "../types/types";
+import { Modal, Box, Typography, TextField, Button, CircularProgress, Alert } from "@mui/material";
 
 interface ItemFormProps {
   storeId: string;
   onItemAdded: (item: StoreItem) => void;
   onCancel: () => void;
 }
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
 
 const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) => {
   const [name, setName] = useState("");
@@ -40,72 +53,66 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
   };
 
   return (
-    <div className="review-form-overlay">
-      <div className="review-form">
-        <div className="review-form-header">
-          <h3>Agregar Item</h3>
-          <button type="button" className="close-button" onClick={onCancel} disabled={loading}>
-            ✕
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Nombre</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Descripción</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="price">Precio</label>
-            <input
-              id="price"
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="picture">URL de la imagen</label>
-            <input
-              id="picture"
-              type="text"
-              value={picture}
-              onChange={(e) => setPicture(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="form-buttons">
-            <button type="submit" disabled={loading} className="submit-button">
-              {loading ? "Agregando..." : "Agregar Item"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal open onClose={onCancel}>
+      <Box sx={style}>
+        <Typography variant="h6" component="h2">
+          Agregar Item
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} className="mt-4">
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Nombre"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Descripción"
+            multiline
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Precio"
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            label="URL de la imagen"
+            value={picture}
+            onChange={(e) => setPicture(e.target.value)}
+            disabled={loading}
+          />
+          {error && (
+            <Alert severity="error" className="mt-2">
+              {error}
+            </Alert>
+          )}
+          <Box className="mt-4 flex justify-end gap-2">
+            <Button onClick={onCancel} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="contained" disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : "Agregar Item"}
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Modal>
   );
 };
 

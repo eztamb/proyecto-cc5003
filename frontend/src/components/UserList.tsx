@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
 import server from "../services/server";
 import type { User } from "../types/types";
+import {
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
+  Button,
+  CircularProgress,
+  Alert,
+  Typography,
+  Box,
+} from "@mui/material";
 
 interface UserListProps {
   user: User | null;
@@ -46,48 +63,67 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
   };
 
   if (loading) {
-    return <div>Cargando usuarios...</div>;
+    return (
+      <Box className="flex justify-center items-center min-h-screen">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <Container>
+        <Alert severity="error" className="mt-4">
+          {error}
+        </Alert>
+      </Container>
+    );
   }
 
   return (
-    <div className="user-list-container">
-      <h1>Administrar Usuarios</h1>
-      <table className="user-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.username}</td>
-              <td>
-                <select
-                  value={u.role}
-                  onChange={(e) => handleRoleChange(u.id, e.target.value as "admin" | "reviewer")}
-                  disabled={u.id === user?.id}
-                >
-                  <option value="reviewer">Reviewer</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-              <td>
-                <button onClick={() => handleDeleteUser(u.id)} disabled={u.id === user?.id}>
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Container className="py-8">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Administrar Usuarios
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Usuario</TableCell>
+              <TableCell>Rol</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((u) => (
+              <TableRow key={u.id}>
+                <TableCell>{u.username}</TableCell>
+                <TableCell>
+                  <Select
+                    value={u.role}
+                    onChange={(e) => handleRoleChange(u.id, e.target.value as "admin" | "reviewer")}
+                    disabled={u.id === user?.id}
+                  >
+                    <MenuItem value="reviewer">Reviewer</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleDeleteUser(u.id)}
+                    disabled={u.id === user?.id}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 

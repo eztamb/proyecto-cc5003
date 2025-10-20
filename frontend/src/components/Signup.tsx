@@ -1,7 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import auth from "../services/auth";
 import type { User } from "../types/types";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Link,
+  CircularProgress,
+} from "@mui/material";
 
 interface SignupProps {
   setUser: (user: User | null) => void;
@@ -33,10 +43,9 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
 
     try {
       await auth.signup({ username, password });
-      // login automático después de registrarse
       const loggedInUser = await auth.login({ username, password });
       setUser(loggedInUser);
-      navigate("/"); // redirigir a la página de inicio
+      navigate("/");
     } catch (err: unknown) {
       const isAxiosLikeError = (error: unknown): error is { response: { status?: number } } =>
         typeof error === "object" &&
@@ -56,64 +65,70 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h1>🍔 Crear Cuenta</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Usuario</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              minLength={3}
-              autoComplete="username"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="new-password"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="new-password"
-              disabled={loading}
-            />
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <button type="submit" disabled={loading} className="auth-button">
-            {loading ? "Creando cuenta..." : "Registrarse"}
-          </button>
-        </form>
-
-        <p className="auth-link">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
-        </p>
-      </div>
-    </div>
+    <Container component="main" maxWidth="xs">
+      <Box className="mt-8 flex flex-col items-center">
+        <Typography component="h1" variant="h4" className="font-bold">
+          🍔 Crear Cuenta
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} className="w-full mt-4">
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Usuario"
+            name="username"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Contraseña"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="confirmPassword"
+            label="Confirmar Contraseña"
+            type="password"
+            id="confirmPassword"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
+          />
+          {error && (
+            <Alert severity="error" className="w-full mt-2">
+              {error}
+            </Alert>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            className="mt-4 mb-2"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Registrarse"}
+          </Button>
+          <Link component={RouterLink} to="/login" variant="body2">
+            ¿Ya tienes cuenta? Inicia sesión aquí
+          </Link>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

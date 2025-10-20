@@ -3,6 +3,24 @@ import { useNavigate, Link } from "react-router-dom";
 import server from "../services/server";
 import auth from "../services/auth";
 import type { StoreWithRating, User } from "../types/types";
+import {
+  Container,
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  CircularProgress,
+  Alert,
+  AppBar,
+  Toolbar,
+  Button,
+  Chip,
+  Grid,
+  Rating,
+} from "@mui/material";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 interface StoreListProps {
   user: User | null;
@@ -14,28 +32,6 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const hasHalf = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-
-    return (
-      <>
-        {[...Array(fullStars)].map((_, i) => (
-          <span key={`full-${i}`} className="star full">
-            ★
-          </span>
-        ))}
-        {hasHalf && <span className="star half">⭑</span>}
-        {[...Array(emptyStars)].map((_, i) => (
-          <span key={`empty-${i}`} className="star empty">
-            ☆
-          </span>
-        ))}
-      </>
-    );
-  };
 
   const handleStoreSelect = (storeId: string) => {
     navigate(`/store/${storeId}`);
@@ -63,94 +59,125 @@ const StoreList: React.FC<StoreListProps> = ({ user, setUser }) => {
   }, []);
 
   if (loading) {
-    return <div className="loading">Loading stores...</div>;
+    return (
+      <Box
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <Container sx={{ py: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Container>
+    );
   }
 
   return (
-    <div className="store-list-container">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>🌯🍝🍟 BeaucheFoods 🥗🍔🍕</h1>
-        <div>
+    <>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{ bgcolor: "background.paper", borderBottom: "1px solid #684a4aff" }}
+      >
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+            BeaucheFoods
+          </Typography>
           {user ? (
-            <div>
-              <span>
+            <Box>
+              <Typography component="span" sx={{ mr: 2 }}>
                 Hola, {user.username} ({user.role})
-              </span>
+              </Typography>
               {user.role === "admin" && (
-                <Link to="/users" style={{ marginLeft: "10px" }}>
-                  <button>Administrar Usuarios</button>
-                </Link>
+                <Button color="inherit" component={Link} to="/users">
+                  Administrar Usuarios
+                </Button>
               )}
-              <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+              <Button color="inherit" onClick={handleLogout}>
                 Logout
-              </button>
-            </div>
+              </Button>
+            </Box>
           ) : (
-            <Link to="/login">
-              <button>Login</button>
-            </Link>
+            <Button color="inherit" component={Link} to="/login">
+              Login
+            </Button>
           )}
-        </div>
-      </div>
-      {user?.role === "admin" && (
-        <Link to="/new-store">
-          <button style={{ marginBottom: "20px" }}>Agregar Tienda</button>
-        </Link>
-      )}
-      {stores.length === 0 ? (
-        <div>
-          <p>No hay tiendas disponibles en este momento.</p>
-        </div>
-      ) : (
-        <ul className="store-list">
-          {stores.map((store) => (
-            <li
-              key={store.id}
-              className="store-item"
-              onClick={() => handleStoreSelect(store.id)}
-              style={{ cursor: "pointer" }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  handleStoreSelect(store.id);
-                }
-              }}
-            >
-              <img
-                src={store.images[0]}
-                className="image"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/images/placeholder.png";
-                }}
-              />
-              <h2>{store.name}</h2>
-              {store.description && <p>{store.description}</p>}
-              <p className="location"> 📍 Ubicación: {store.location}</p>
-              <p className="category">Tipo: {store.storeCategory}</p>
-              <p className={store.junaeb ? "junaeb" : ""}>
-                {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb 😔"}
-              </p>
-              <div className="rating">
-                <span
-                  className="stars"
-                  role="img"
-                  aria-label={`Rating: ${store.averageRating} out of 5`}
-                >
-                  {renderStars(store.averageRating)}
-                </span>
-                <span className="numeric-rating">{store.averageRating.toFixed(1)}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        </Toolbar>
+      </AppBar>
+      <Container sx={{ py: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Tiendas Disponibles
+          </Typography>
+          {user?.role === "admin" && (
+            <Button variant="contained" component={Link} to="/new-store">
+              Agregar Tienda
+            </Button>
+          )}
+        </Box>
+
+        {stores.length === 0 ? (
+          <Typography>No hay tiendas disponibles en este momento.</Typography>
+        ) : (
+          <Grid container spacing={4}>
+            {stores.map((store) => (
+              <Grid item key={store.id} xs={12} sm={6} md={4}>
+                <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                  <CardActionArea onClick={() => handleStoreSelect(store.id)}>
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={store.images[0] || "/images/placeholder.png"}
+                      alt={store.name}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/placeholder.png";
+                      }}
+                    />
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {store.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {store.description}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                        <LocationOnIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {store.location}
+                        </Typography>
+                      </Box>
+                      <Chip label={store.storeCategory} size="small" sx={{ mb: 2 }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: store.junaeb ? "#68d391" : "#fc8181", fontWeight: "medium" }}
+                      >
+                        {store.junaeb ? "Acepta Junaeb" : "No Acepta Junaeb"}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", mt: "auto", pt: 2 }}>
+                        <Rating
+                          name="read-only"
+                          value={store.averageRating}
+                          precision={0.5}
+                          readOnly
+                        />
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                          {store.averageRating.toFixed(1)}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </>
   );
 };
 

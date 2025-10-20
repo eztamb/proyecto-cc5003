@@ -1,7 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import auth from "../services/auth";
 import type { User } from "../types/types";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Link,
+  CircularProgress,
+} from "@mui/material";
 
 interface LoginProps {
   setUser: (user: User | null) => void;
@@ -32,48 +42,58 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h1>🌯 Iniciar Sesión</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Usuario</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              autoComplete="username"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              disabled={loading}
-            />
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <button type="submit" disabled={loading} className="auth-button">
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-          </button>
-        </form>
-
-        <p className="auth-link">
-          ¿No tienes cuenta? <Link to="/signup">Regístrate aquí</Link>
-        </p>
-      </div>
-    </div>
+    <Container component="main" maxWidth="xs">
+      <Box className="mt-8 flex flex-col items-center">
+        <Typography component="h1" variant="h4" className="font-bold">
+          🌯 Iniciar Sesión
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} className="w-full mt-4">
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Usuario"
+            name="username"
+            autoComplete="username"
+            autoFocus
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Contraseña"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+          {error && (
+            <Alert severity="error" className="w-full mt-2">
+              {error}
+            </Alert>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            className="mt-4 mb-2 bg-primary-orange"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Iniciar Sesión"}
+          </Button>
+          <Link component={RouterLink} to="/signup" variant="body2">
+            ¿No tienes cuenta? Regístrate aquí
+          </Link>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

@@ -2,6 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import server from "../services/server";
 import type { NewStore } from "../types/types";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+  Alert,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
 
 const StoreForm: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -63,81 +74,85 @@ const StoreForm: React.FC = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h1>{storeId ? "Editar Tienda" : "Agregar Tienda"}</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Nombre</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Descripción</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="location">Ubicación</label>
-            <input
-              id="location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="storeCategory">Categoría</label>
-            <input
-              id="storeCategory"
-              type="text"
-              value={storeCategory}
-              onChange={(e) => setStoreCategory(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="images">Imágenes (URL separadas por comas)</label>
-            <input
-              id="images"
-              type="text"
-              value={images.join(",")}
-              onChange={(e) => setImages(e.target.value.split(","))}
-              disabled={loading}
-            />
-          </div>
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
+    <Container component="main" maxWidth="sm">
+      <Box className="mt-8 flex flex-col items-center">
+        <Typography component="h1" variant="h4">
+          {storeId ? "Editar Tienda" : "Agregar Tienda"}
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} className="w-full mt-4">
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Nombre"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Descripción"
+            multiline
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Ubicación"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Categoría"
+            value={storeCategory}
+            onChange={(e) => setStoreCategory(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            label="Imágenes (URL separadas por comas)"
+            value={images.join(",")}
+            onChange={(e) => setImages(e.target.value.split(","))}
+            disabled={loading}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
                 checked={junaeb}
                 onChange={(e) => setJunaeb(e.target.checked)}
                 disabled={loading}
               />
-              Acepta Junaeb
-            </label>
-          </div>
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit" disabled={loading} className="auth-button">
-            {loading ? "Guardando..." : "Guardar Tienda"}
-          </button>
-        </form>
-      </div>
-    </div>
+            }
+            label="Acepta Junaeb"
+          />
+          {error && (
+            <Alert severity="error" className="w-full mt-2">
+              {error}
+            </Alert>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            className="mt-4 mb-2"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Guardar Tienda"}
+          </Button>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 
