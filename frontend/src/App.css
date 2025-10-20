@@ -236,7 +236,7 @@
   margin-bottom: 12px;
 }
 
-.price { 
+.price {
   color: white;
   display: inline-block;
   width: fit-content;
@@ -443,4 +443,22 @@
   color: #666;
   font-style: italic;
   margin: 20px 0;
+}
+
+.user-list-container {
+    margin: 20px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th, .user-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.user-table th {
+    background-color: #f2f2f2;
 }
