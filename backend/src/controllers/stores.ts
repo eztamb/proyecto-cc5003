@@ -4,11 +4,16 @@ import middleware from "../utils/middleware";
 
 const router = express.Router();
 
+interface StoreFilter {
+  storeCategory?: string;
+  $or?: Array<{ [key: string]: { $regex: string; $options: string } }>;
+}
+
 // get /api/stores - listar todas las tiendas (con filtros opcionales)
 router.get("/", async (req, res) => {
   const { category, search } = req.query;
 
-  const filter: any = {};
+  const filter: StoreFilter = {};
 
   if (category && typeof category === "string" && category !== "all") {
     filter.storeCategory = category;
