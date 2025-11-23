@@ -8,9 +8,9 @@ const NotificationSnackbar: React.FC = () => {
   return (
     <Snackbar
       open={snackbar.open}
-      autoHideDuration={6000}
+      autoHideDuration={3000}
       onClose={hideSnackbar}
-      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
     >
       <Alert
         onClose={hideSnackbar}
