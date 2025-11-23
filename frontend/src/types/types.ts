@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   username: string;
-  role: "admin" | "reviewer";
+  role: "admin" | "reviewer" | "seller";
 }
 
 export interface Store {
@@ -12,6 +12,7 @@ export interface Store {
   location: string;
   images: string[];
   junaeb: boolean;
+  owner: string;
 }
 
 export interface NewStore {
@@ -40,6 +41,7 @@ export interface StoreItem {
   description: string;
   picture: string;
   price: number;
+  storeRating?: number;
 }
 
 export interface NewItem {
@@ -69,6 +71,8 @@ export interface StoreReview {
   comment: string;
   userName?: string;
   picture?: string;
+  updatedAt?: string;
+  createdAt?: string;
 }
 
 export interface StoreWithDetails extends Store {
@@ -77,7 +81,23 @@ export interface StoreWithDetails extends Store {
   averageRating: number;
 }
 
-export interface StoresResponse {
-  stores: Store[];
-  total: number;
+export interface SellerRequest {
+  id: string;
+  user: {
+    id: string;
+    username: string;
+  };
+  fullName: string;
+  rut: string;
+  email: string;
+  description: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+export interface NewSellerRequest {
+  fullName: string;
+  rut: string;
+  email: string;
+  description: string;
 }

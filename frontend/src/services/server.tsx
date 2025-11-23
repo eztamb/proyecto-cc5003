@@ -9,14 +9,27 @@ import type {
   NewStore,
   NewItem,
   User,
+  SellerRequest,
+  NewSellerRequest,
 } from "../types/types";
 import auth from "./auth";
 
 const baseUrl = "http://localhost:3001/api";
 
+const getAuthHeaders = () => {
+  const csrfToken = auth.getCsrfToken();
+  return {
+    withCredentials: true,
+    headers: {
+      "X-CSRF-Token": csrfToken || "",
+    },
+  };
+};
+
 interface StoreFilters {
   category?: string;
   search?: string;
+  owner?: string;
 }
 
 const getAllStores = (filters?: StoreFilters): Promise<Store[]> => {
@@ -28,61 +41,34 @@ const getStoreById = (id: string): Promise<Store> => {
 };
 
 const createStore = (store: NewStore): Promise<Store> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.post(`${baseUrl}/stores`, store, config).then((response) => response.data);
+  return axios.post(`${baseUrl}/stores`, store, getAuthHeaders()).then((response) => response.data);
 };
 
 const updateStore = (id: string, store: NewStore): Promise<Store> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.put(`${baseUrl}/stores/${id}`, store, config).then((response) => response.data);
+  return axios
+    .put(`${baseUrl}/stores/${id}`, store, getAuthHeaders())
+    .then((response) => response.data);
 };
 
 const deleteStore = (id: string): Promise<void> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.delete(`${baseUrl}/stores/${id}`, config).then(() => undefined);
+  return axios.delete(`${baseUrl}/stores/${id}`, getAuthHeaders()).then(() => undefined);
 };
 
 const getAllStoreItems = (): Promise<StoreItem[]> => {
   return axios.get(`${baseUrl}/items`).then((response) => response.data);
 };
 
+const searchItems = (q: string, sort: string): Promise<StoreItem[]> => {
+  return axios.get(`${baseUrl}/items/search`, { params: { q, sort } }).then((res) => res.data);
+};
+
 const getStoreItemsByStoreId = async (storeId: string): Promise<StoreItem[]> => {
-  // Nota: Este filtrado sigue siendo local, podría optimizarse si la API lo permite
   const allItems = await getAllStoreItems();
   return allItems.filter((item) => item.store.id === storeId);
 };
 
-const getStoreItemById = (id: string): Promise<StoreItem> => {
-  return axios.get(`${baseUrl}/items/${id}`).then((response) => response.data);
-};
-
 const createStoreItem = (item: NewItem): Promise<StoreItem> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.post(`${baseUrl}/items`, item, config).then((response) => response.data);
+  return axios.post(`${baseUrl}/items`, item, getAuthHeaders()).then((response) => response.data);
 };
 
 const getAllStoreReviews = (): Promise<StoreReview[]> => {
@@ -90,39 +76,24 @@ const getAllStoreReviews = (): Promise<StoreReview[]> => {
 };
 
 const getStoreReviewsByStoreId = async (storeId: string): Promise<StoreReview[]> => {
-  // Nota: Este filtrado sigue siendo local, podría optimizarse si la API lo permite
   const allReviews = await getAllStoreReviews();
   return allReviews.filter((review) => review.store.id === storeId);
 };
 
-const getStoreReviewById = (id: string): Promise<StoreReview> => {
-  return axios.get(`${baseUrl}/reviews/${id}`).then((response) => response.data);
+const createStoreReview = (review: NewReview): Promise<StoreReview> => {
+  return axios
+    .post(`${baseUrl}/reviews`, review, getAuthHeaders())
+    .then((response) => response.data);
 };
 
-const createStoreReview = (review: NewReview): Promise<StoreReview> => {
-  const csrfToken = auth.getCsrfToken();
-
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-
-  return axios.post(`${baseUrl}/reviews`, review, config).then((response) => response.data);
+const updateStoreReview = (id: string, reviewData: Partial<NewReview>): Promise<StoreReview> => {
+  return axios
+    .put(`${baseUrl}/reviews/${id}`, reviewData, getAuthHeaders())
+    .then((res) => res.data);
 };
 
 const deleteStoreReview = (id: string): Promise<void> => {
-  const csrfToken = auth.getCsrfToken();
-
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-
-  return axios.delete(`${baseUrl}/reviews/${id}`, config).then(() => undefined);
+  return axios.delete(`${baseUrl}/reviews/${id}`, getAuthHeaders()).then(() => undefined);
 };
 
 const getStoreWithDetails = (storeId: string): Promise<StoreWithDetails> => {
@@ -150,18 +121,14 @@ const getStoreWithDetails = (storeId: string): Promise<StoreWithDetails> => {
 };
 
 const getStoresWithAverageRating = (filters?: StoreFilters): Promise<StoreWithRating[]> => {
-  // Ahora la llamada a getAllStores incluye los filtros
   return Promise.all([getAllStores(filters), getAllStoreReviews()])
     .then(([stores, reviews]) => {
-      // El resto de la lógica para calcular el rating promedio se mantiene
       return stores.map((store) => {
         const storeReviews = reviews.filter((review) => review.store.id === store.id);
-
         const averageRating =
           storeReviews.length > 0
             ? storeReviews.reduce((sum, review) => sum + review.rating, 0) / storeReviews.length
             : 0;
-
         return {
           ...store,
           averageRating: Math.round(averageRating * 10) / 10,
@@ -174,36 +141,34 @@ const getStoresWithAverageRating = (filters?: StoreFilters): Promise<StoreWithRa
 };
 
 const getAllUsers = (): Promise<User[]> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.get(`${baseUrl}/users`, config).then((response) => response.data);
+  return axios.get(`${baseUrl}/users`, getAuthHeaders()).then((response) => response.data);
 };
 
-const updateUserRole = (id: string, role: "admin" | "reviewer"): Promise<User> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.put(`${baseUrl}/users/${id}`, { role }, config).then((response) => response.data);
+const updateUserRole = (id: string, role: "admin" | "reviewer" | "seller"): Promise<User> => {
+  return axios
+    .put(`${baseUrl}/users/${id}`, { role }, getAuthHeaders())
+    .then((response) => response.data);
 };
 
 const deleteUser = (id: string): Promise<void> => {
-  const csrfToken = auth.getCsrfToken();
-  const config = {
-    withCredentials: true,
-    headers: {
-      "X-CSRF-Token": csrfToken || "",
-    },
-  };
-  return axios.delete(`${baseUrl}/users/${id}`, config).then(() => undefined);
+  return axios.delete(`${baseUrl}/users/${id}`, getAuthHeaders()).then(() => undefined);
+};
+
+const createSellerRequest = (data: NewSellerRequest): Promise<SellerRequest> => {
+  return axios.post(`${baseUrl}/users/requests`, data, getAuthHeaders()).then((res) => res.data);
+};
+
+const getSellerRequests = (): Promise<SellerRequest[]> => {
+  return axios.get(`${baseUrl}/users/requests`, getAuthHeaders()).then((res) => res.data);
+};
+
+const updateSellerRequestStatus = (
+  id: string,
+  status: "approved" | "rejected",
+): Promise<SellerRequest> => {
+  return axios
+    .put(`${baseUrl}/users/requests/${id}`, { status }, getAuthHeaders())
+    .then((res) => res.data);
 };
 
 export default {
@@ -213,21 +178,20 @@ export default {
   updateStore,
   deleteStore,
   getStoresWithAverageRating,
-
   getAllStoreItems,
   getStoreItemsByStoreId,
-  getStoreItemById,
   createStoreItem,
-
+  searchItems,
   getAllStoreReviews,
   getStoreReviewsByStoreId,
-  getStoreReviewById,
   createStoreReview,
+  updateStoreReview,
   deleteStoreReview,
-
   getStoreWithDetails,
-
   getAllUsers,
   updateUserRole,
   deleteUser,
+  createSellerRequest,
+  getSellerRequests,
+  updateSellerRequestStatus,
 };

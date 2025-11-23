@@ -1,0 +1,67 @@
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "../stores/useAuthStore";
+import server from "../services/server";
+import type { StoreWithRating } from "../types/types";
+import {
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActionArea,
+  Button,
+  Box,
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+
+const MyStores: React.FC = () => {
+  const { user } = useAuthStore();
+  const [stores, setStores] = useState<StoreWithRating[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      server.getStoresWithAverageRating({ owner: user.id }).then(setStores);
+    }
+  }, [user]);
+
+  return (
+    <Container sx={{ py: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4">Mis Tiendas</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} component={Link} to="/new-store">
+          Nueva Tienda
+        </Button>
+      </Box>
+
+      <Grid container spacing={3}>
+        {stores.map((store) => (
+          <Grid item xs={12} sm={6} md={4} key={store.id}>
+            <Card>
+              <CardActionArea onClick={() => navigate(`/store/${store.id}`)}>
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={store.images[0] || "/images/placeholder.png"}
+                  alt={store.name}
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="div">
+                    {store.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {store.location}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+};
+
+export default MyStores;

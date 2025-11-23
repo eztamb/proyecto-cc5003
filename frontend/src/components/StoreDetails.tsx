@@ -39,6 +39,40 @@ const StoreDetails: React.FC = () => {
   const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
   const [deleteReviewDialogOpen, setDeleteReviewDialogOpen] = useState(false);
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
+  const [userReview, setUserReview] = useState<StoreReview | null>(null);
+
+  useEffect(() => {
+    if (store && user) {
+      const existing = store.reviews.find((r) => r.user.id === user.id);
+      setUserReview(existing || null);
+    }
+  }, [store, user]);
+
+  const handleReviewSubmit = async (reviewData: any) => {
+    try {
+      if (userReview) {
+        const updated = await server.updateStoreReview(userReview.id, reviewData);
+        if (store) {
+          const otherReviews = store.reviews.filter((r) => r.id !== userReview.id);
+          const newReviews = [...otherReviews, updated];
+          const avg = newReviews.reduce((acc, r) => acc + r.rating, 0) / newReviews.length;
+          setStore({ ...store, reviews: newReviews, averageRating: avg });
+        }
+        showSnackbar("Reseña actualizada", "success");
+      } else {
+        const newReview = await server.createStoreReview(reviewData);
+        if (store) {
+          const newReviews = [...store.reviews, newReview];
+          const avg = newReviews.reduce((acc, r) => acc + r.rating, 0) / newReviews.length;
+          setStore({ ...store, reviews: newReviews, averageRating: avg });
+        }
+        showSnackbar("Reseña creada", "success");
+      }
+      setShowReviewForm(false);
+    } catch {
+      showSnackbar(error.response?.data?.error || "Error", "error");
+    }
+  };
 
   const { showSnackbar } = useUIStore();
 
@@ -303,10 +337,10 @@ const StoreDetails: React.FC = () => {
             {user && (
               <Button
                 variant="contained"
-                startIcon={<AddIcon />}
+                startIcon={userReview ? <EditIcon /> : <AddIcon />}
                 onClick={() => setShowReviewForm(true)}
               >
-                Agregar Reseña
+                {userReview ? "Editar mi Reseña" : "Agregar Reseña"}
               </Button>
             )}
           </Box>
@@ -361,6 +395,7 @@ const StoreDetails: React.FC = () => {
       </Container>
 
       {showReviewForm && (
+        // TODO: pasar valores iniciales al ReviewForm si existe userReview (actualizar ReviewForm para aceptar initialValues)
         <ReviewForm
           storeId={storeId}
           onReviewAdded={handleReviewAdded}
