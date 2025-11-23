@@ -31,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item, showStoreInfo = false }
         )}
 
         <Typography variant="h5" color="primary" fontWeight="bold">
-          ${item.price.toLocaleString()}
+          ${item.price.toLocaleString("es-cl")}
         </Typography>
 
         {showStoreInfo && (
