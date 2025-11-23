@@ -6,12 +6,12 @@ const router = express.Router();
 
 interface StoreFilter {
   storeCategory?: string;
+  owner?: string;
   $or?: Array<{ [key: string]: { $regex: string; $options: string } }>;
 }
 
-// get /api/stores - listar todas las tiendas (con filtros opcionales)
 router.get("/", async (req, res) => {
-  const { category, search } = req.query;
+  const { category, search, owner } = req.query;
 
   const filter: StoreFilter = {};
 
@@ -20,30 +20,35 @@ router.get("/", async (req, res) => {
   }
 
   if (search && typeof search === "string") {
-    // Busca en name y description, insensible a mayúsculas/minúsculas
     filter.$or = [
       { name: { $regex: search, $options: "i" } },
       { description: { $regex: search, $options: "i" } },
     ];
   }
 
+  if (owner && typeof owner === "string") {
+    filter.owner = owner;
+  }
+
   const stores = await Store.find(filter);
   res.json(stores);
 });
 
-// get /api/stores/:id - obtener una tienda por id
 router.get("/:id", async (req, res) => {
   const store = await Store.findById(req.params.id);
   if (store) {
     res.json(store);
   } else {
-    res.status(404).end(); // not found
+    res.status(404).end();
   }
 });
 
-// post /api/stores - crear una nueva tienda
-router.post("/", middleware.auth, middleware.isAdmin, async (req, res) => {
+// Crear tienda (Admin o Seller)
+router.post("/", middleware.auth, middleware.isSellerOrAdmin, async (req, res) => {
   const { storeCategory, name, description, location, images, junaeb } = req.body;
+  const user = req.user;
+
+  if (!user) return res.status(401).json({ error: "token missing" });
 
   const newStore = new Store({
     storeCategory,
@@ -52,20 +57,35 @@ router.post("/", middleware.auth, middleware.isAdmin, async (req, res) => {
     location,
     images: images || [],
     junaeb: junaeb || false,
+    owner: user.id, // Asigna al creador como dueño
   });
 
   const savedStore = await newStore.save();
-  res.status(201).json(savedStore); // 201 created
+  res.status(201).json(savedStore);
 });
 
-// delete /api/stores/:id - eliminar una tienda
-router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
+router.delete("/:id", middleware.auth, middleware.isSellerOrAdmin, async (req, res) => {
+  const store = await Store.findById(req.params.id);
+  if (!store) return res.status(404).end();
+
+  const user = req.user;
+  if (user?.role !== "admin" && store.owner.toString() !== user?.id) {
+    return res.status(403).json({ error: "permission denied" });
+  }
+
   await Store.findByIdAndDelete(req.params.id);
-  res.status(204).end(); // 204 no content
+  res.status(204).end();
 });
 
-// put /api/stores/:id - actualizar una tienda
-router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
+router.put("/:id", middleware.auth, middleware.isSellerOrAdmin, async (req, res) => {
+  const store = await Store.findById(req.params.id);
+  if (!store) return res.status(404).end();
+
+  const user = req.user;
+  if (user?.role !== "admin" && store.owner.toString() !== user?.id) {
+    return res.status(403).json({ error: "permission denied" });
+  }
+
   const { storeCategory, name, description, location, images, junaeb } = req.body;
 
   const storeToUpdate = {
@@ -78,7 +98,6 @@ router.put("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
   };
 
   const updatedStore = await Store.findByIdAndUpdate(req.params.id, storeToUpdate, { new: true });
-
   res.json(updatedStore);
 });
 

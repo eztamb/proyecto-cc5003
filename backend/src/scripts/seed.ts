@@ -52,7 +52,8 @@ const seed = async () => {
 
     for (const storeData of dbData.stores) {
       const { id, ...rest } = storeData;
-      const newStore = await new Store(rest).save();
+      // Asignamos al admin como dueño de las tiendas del seed
+      const newStore = await new Store({ ...rest, owner: adminUser._id }).save();
       storeIdMap[id] = newStore._id;
     }
 
@@ -80,7 +81,7 @@ const seed = async () => {
 
     console.log("✅ Seeding completado con éxito.");
 
-    // IMPORTANTE: Cerrar la conexión al terminar para que el script finalice
+    // Cerrar la conexión al terminar para que el script finalice
     await mongoose.connection.close();
     process.exit(0);
   } catch (error) {

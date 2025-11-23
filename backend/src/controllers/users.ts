@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/user";
+import SellerRequest from "../models/sellerRequest";
 import middleware from "../utils/middleware";
 
 const router = express.Router();
@@ -28,7 +29,7 @@ router.post("/", async (req, res) => {
 
   const newUser = new User({
     username,
-    passwordHash, // guardamos el hash, no la contraseña original
+    passwordHash,
     role,
   });
 
@@ -68,6 +69,56 @@ router.delete("/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
 
   await User.findByIdAndDelete(req.params.id);
   res.status(204).end();
+});
+
+// crear solicitud
+router.post("/requests", middleware.auth, async (req, res) => {
+  const { fullName, rut, email, description } = req.body;
+  const user = req.user;
+
+  if (!user) return res.status(401).end();
+
+  // verificar si ya existe una pendiente
+  const existing = await SellerRequest.findOne({ user: user.id, status: "pending" });
+  if (existing) {
+    return res.status(400).json({ error: "Pending request already exists" });
+  }
+
+  const newRequest = new SellerRequest({
+    user: user.id,
+    fullName,
+    rut,
+    email,
+    description,
+  });
+
+  const savedRequest = await newRequest.save();
+  res.status(201).json(savedRequest);
+});
+
+// listar solicitudes (Admin)
+router.get("/requests", middleware.auth, middleware.isAdmin, async (_req, res) => {
+  const requests = await SellerRequest.find({ status: "pending" }).populate("user", {
+    username: 1,
+  });
+  res.json(requests);
+});
+
+// aprobar/rechazar solicitud (Admin)
+router.put("/requests/:id", middleware.auth, middleware.isAdmin, async (req, res) => {
+  const { status } = req.body; // approved | rejected
+  const request = await SellerRequest.findById(req.params.id);
+
+  if (!request) return res.status(404).json({ error: "Request not found" });
+
+  request.status = status;
+  await request.save();
+
+  if (status === "approved") {
+    await User.findByIdAndUpdate(request.user, { role: "seller" });
+  }
+
+  res.json(request);
 });
 
 export default router;

@@ -27,6 +27,12 @@ router.post("/", middleware.auth, async (req, res) => {
     return res.status(400).json({ error: "invalid store id" });
   }
 
+  // Verificar duplicados manualmente también para mejor mensaje de error
+  const existingReview = await Review.findOne({ store: storeId, user: user.id });
+  if (existingReview) {
+    return res.status(400).json({ error: "User already reviewed this store" });
+  }
+
   const newReview = new Review({
     store: store._id,
     user: user.id,
@@ -42,7 +48,28 @@ router.post("/", middleware.auth, async (req, res) => {
   return;
 });
 
-// delete /api/reviews/:id - eliminar una review
+// Editar reseña propia
+router.put("/:id", middleware.auth, async (req, res) => {
+  const { rating, comment, picture } = req.body;
+  const user = req.user;
+
+  const review = await Review.findById(req.params.id);
+  if (!review) return res.status(404).end();
+
+  if (review.user.toString() !== user?.id) {
+    return res.status(403).json({ error: "can only edit own reviews" });
+  }
+
+  review.rating = rating;
+  review.comment = comment;
+  if (picture) review.picture = picture;
+
+  const updatedReview = await review.save();
+  await updatedReview.populate("user", { username: 1 });
+
+  res.json(updatedReview);
+});
+
 router.delete("/:id", middleware.auth, async (req, res) => {
   const user = req.user;
   const review = await Review.findById(req.params.id);
@@ -51,7 +78,6 @@ router.delete("/:id", middleware.auth, async (req, res) => {
     return res.status(404).end();
   }
 
-  // user is admin or the creator of the review
   if (user?.role === "admin" || review.user.toString() === user?.id) {
     await Review.findByIdAndDelete(req.params.id);
     return res.status(204).end();
