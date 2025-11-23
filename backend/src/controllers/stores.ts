@@ -1,6 +1,7 @@
 import express from "express";
 import Store from "../models/store";
 import middleware from "../utils/middleware";
+import { validateUrl } from "../utils/validation";
 
 const router = express.Router();
 
@@ -50,6 +51,24 @@ router.post("/", middleware.auth, middleware.isSellerOrAdmin, async (req, res) =
 
   if (!user) return res.status(401).json({ error: "token missing" });
 
+  // Validaciones
+  if (!name || name.length > 50) {
+    return res.status(400).json({ error: "Name must be 50 characters or less" });
+  }
+  if (!description || description.length > 250) {
+    return res.status(400).json({ error: "Description must be 250 characters or less" });
+  }
+  if (!location || location.length > 100) {
+    return res.status(400).json({ error: "Location must be 100 characters or less" });
+  }
+  if (images && Array.isArray(images)) {
+    for (const img of images) {
+      if (!validateUrl(img)) {
+        return res.status(400).json({ error: "Invalid image URL" });
+      }
+    }
+  }
+
   const newStore = new Store({
     storeCategory,
     name,
@@ -87,6 +106,24 @@ router.put("/:id", middleware.auth, middleware.isSellerOrAdmin, async (req, res)
   }
 
   const { storeCategory, name, description, location, images, junaeb } = req.body;
+
+  // Validaciones
+  if (name && name.length > 50) {
+    return res.status(400).json({ error: "Name must be 50 characters or less" });
+  }
+  if (description && description.length > 250) {
+    return res.status(400).json({ error: "Description must be 250 characters or less" });
+  }
+  if (location && location.length > 100) {
+    return res.status(400).json({ error: "Location must be 100 characters or less" });
+  }
+  if (images && Array.isArray(images)) {
+    for (const img of images) {
+      if (!validateUrl(img)) {
+        return res.status(400).json({ error: "Invalid image URL" });
+      }
+    }
+  }
 
   const storeToUpdate = {
     storeCategory,

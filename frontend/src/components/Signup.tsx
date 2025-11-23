@@ -17,6 +17,8 @@ const Signup: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -30,16 +32,31 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUsernameError("");
+    setPasswordError("");
+
+    let valid = true;
+
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (username.length < 3) {
+      setUsernameError("El usuario debe tener al menos 3 caracteres.");
+      valid = false;
+    } else if (!usernameRegex.test(username)) {
+      setUsernameError("El usuario solo puede contener letras, números y guiones bajos.");
+      valid = false;
+    }
+
+    if (password.length < 6) {
+      setPasswordError("La contraseña debe tener al menos 6 caracteres.");
+      valid = false;
+    }
 
     if (password !== confirmPassword) {
       showSnackbar("Las contraseñas no coinciden", "warning");
       return;
     }
 
-    if (password.length < 6) {
-      showSnackbar("La contraseña debe tener al menos 6 caracteres", "warning");
-      return;
-    }
+    if (!valid) return;
 
     setLoading(true);
 
@@ -84,6 +101,8 @@ const Signup: React.FC = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             disabled={loading}
+            error={!!usernameError}
+            helperText={usernameError}
           />
           <TextField
             margin="normal"
@@ -97,6 +116,8 @@ const Signup: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
+            error={!!passwordError}
+            helperText={passwordError}
           />
           <TextField
             margin="normal"

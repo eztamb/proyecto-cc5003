@@ -3,6 +3,7 @@ import { Container, TextField, Button, Typography, Box, Paper } from "@mui/mater
 import server from "../services/server";
 import { useUIStore } from "../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
+import { formatRut, validateRut, validateEmail } from "../utils/validation";
 
 const SellerApplication: React.FC = () => {
   const [fullName, setFullName] = useState("");
@@ -11,11 +12,64 @@ const SellerApplication: React.FC = () => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Estado para errores
+  const [errors, setErrors] = useState({
+    fullName: "",
+    rut: "",
+    email: "",
+    description: "",
+  });
+
   const { showSnackbar } = useUIStore();
   const navigate = useNavigate();
 
+  const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Formatear mientras escribe
+    const formatted = formatRut(e.target.value);
+    setRut(formatted);
+    // Limpiar error si empieza a corregir
+    if (errors.rut) setErrors({ ...errors, rut: "" });
+  };
+
+  const validateForm = () => {
+    const newErrors = { fullName: "", rut: "", email: "", description: "" };
+    let isValid = true;
+
+    if (fullName.trim().length < 5) {
+      newErrors.fullName = "El nombre debe tener al menos 5 caracteres.";
+      isValid = false;
+    }
+
+    if (!validateRut(rut)) {
+      newErrors.rut = "RUT inválido.";
+      isValid = false;
+    }
+
+    if (!validateEmail(email)) {
+      newErrors.email = "Correo electrónico inválido.";
+      isValid = false;
+    }
+
+    if (description.trim().length < 20) {
+      newErrors.description = "La descripción es muy corta (mínimo 20 caracteres).";
+      isValid = false;
+    } else if (description.length > 500) {
+      newErrors.description = "La descripción no puede exceder 500 caracteres.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      showSnackbar("Por favor corrige los errores antes de enviar.", "warning");
+      return;
+    }
+
     setLoading(true);
     try {
       await server.createSellerRequest({ fullName, rut, email, description });
@@ -43,6 +97,9 @@ const SellerApplication: React.FC = () => {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            error={!!errors.fullName}
+            helperText={errors.fullName}
+            inputProps={{ maxLength: 100 }}
           />
           <TextField
             fullWidth
@@ -50,7 +107,10 @@ const SellerApplication: React.FC = () => {
             margin="normal"
             required
             value={rut}
-            onChange={(e) => setRut(e.target.value)}
+            onChange={handleRutChange}
+            error={!!errors.rut}
+            helperText={errors.rut || "Formato: 12.345.678-9"}
+            inputProps={{ maxLength: 12 }}
           />
           <TextField
             fullWidth
@@ -60,6 +120,8 @@ const SellerApplication: React.FC = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             fullWidth
@@ -70,6 +132,9 @@ const SellerApplication: React.FC = () => {
             required
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            error={!!errors.description}
+            helperText={errors.description || `${description.length}/500 caracteres`}
+            inputProps={{ maxLength: 500 }}
           />
           <Button
             type="submit"

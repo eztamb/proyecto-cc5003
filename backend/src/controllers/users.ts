@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import User from "../models/user";
 import SellerRequest from "../models/sellerRequest";
 import middleware from "../utils/middleware";
+import { validateEmail, validateRut } from "../utils/validation";
 
 const router = express.Router();
 
@@ -13,6 +14,17 @@ router.post("/", async (req, res) => {
   // validaciones básicas
   if (!username || !password) {
     return res.status(400).json({ error: "username and password are required" });
+  }
+
+  if (username.length < 3) {
+    return res.status(400).json({ error: "username must be at least 3 characters long" });
+  }
+
+  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+  if (!usernameRegex.test(username)) {
+    return res
+      .status(400)
+      .json({ error: "username can only contain letters, numbers and underscores" });
   }
 
   if (password.length < 6) {
@@ -77,6 +89,23 @@ router.post("/requests", middleware.auth, async (req, res) => {
   const user = req.user;
 
   if (!user) return res.status(401).end();
+
+  // Validaciones de solicitud
+  if (!fullName || fullName.trim().length < 5 || fullName.length > 100) {
+    return res.status(400).json({ error: "Full Name must be between 5 and 100 characters" });
+  }
+
+  if (!validateRut(rut)) {
+    return res.status(400).json({ error: "Invalid RUT" });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ error: "Invalid Email" });
+  }
+
+  if (!description || description.trim().length < 20 || description.length > 500) {
+    return res.status(400).json({ error: "Description must be between 20 and 500 characters" });
+  }
 
   // verificar si ya existe una pendiente
   const existing = await SellerRequest.findOne({ user: user.id, status: "pending" });
