@@ -8,7 +8,6 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
   const reviewCommentEdited = `Esta es una reseña EDITADA ${timestamp}`;
 
   test.beforeEach(async ({ page }) => {
-    // Registrar usuario antes de cada test para tener sesión
     await page.goto("/signup");
     await page.getByLabel("Usuario").fill(username);
     await page.getByLabel(/^Contraseña/).fill(password);
@@ -18,81 +17,76 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
   });
 
   test("Debe permitir crear, editar y eliminar una reseña", async ({ page }) => {
-    // --- LEER (Listar tiendas y entrar a una) ---
+    // --- LEER ---
     const firstStoreCard = page.locator(".MuiCardActionArea-root").first();
     await firstStoreCard.waitFor();
     await firstStoreCard.click();
-
-    // Verificar que estamos en el detalle de la tienda
     await expect(page).toHaveURL(/\/store\//);
 
-    // --- CREAR (Agregar Reseña) ---
+    // --- CREAR ---
     await page.getByRole("button", { name: "Agregar Reseña" }).click();
-
     await expect(page.getByRole("heading", { name: "Agregar Reseña" })).toBeVisible();
 
-    // Usar force: true para el Rating de MUI
-    await page.getByRole("radio", { name: "5 Stars" }).click({ force: true });
+    const createModal = page.locator('[role="presentation"]').first();
+    const createRating = createModal.locator(".MuiRating-root");
+    await createRating.locator("label >> nth=4").click();
 
     await page.getByLabel("Comentario").fill(reviewComment);
-
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
 
-    // Verificar mensaje de éxito
     await expect(page.getByText("Reseña agregada con éxito")).toBeVisible();
     await expect(page.getByText(reviewComment)).toBeVisible();
 
-    // --- EDITAR (Modificar Reseña) ---
+    // --- EDITAR ---
     const editButton = page.getByRole("button", { name: "Editar mi Reseña" });
     await expect(editButton).toBeVisible();
     await editButton.click();
 
     await expect(page.getByRole("heading", { name: "Editar Reseña" })).toBeVisible();
 
-    // Cambiar rating a 4 y comentario
-    await page.getByRole("radio", { name: "4 Stars" }).click({ force: true });
+    const editModal = page.locator('[role="presentation"]').last();
+    const editRating = editModal.locator(".MuiRating-root");
+    await editRating.locator("label >> nth=3").click();
+
     await page.getByLabel("Comentario").fill(reviewCommentEdited);
 
-    await page.getByRole("button", { name: "Enviar", exact: true }).click();
+    // --- GUARDAR Y ESPERAR ---
+    const [editResponse] = await Promise.all([
+      page.waitForResponse(
+        (resp) => resp.url().includes("/api/reviews/") && resp.request().method() === "PUT",
+      ),
+      page.getByRole("button", { name: "Enviar", exact: true }).click(),
+    ]);
 
-    // Esperar a que el texto cambie en la UI
+    expect(editResponse.status()).toBe(200);
+
     await expect(page.getByText(reviewCommentEdited)).toBeVisible();
 
-    // --- RELOAD / PERSISTENCIA ---
-    // Recargamos la página para asegurar persistencia.
-    // Esperamos explícitamente a que la respuesta de la API de la tienda llegue.
-    const responsePromise = page.waitForResponse(
-      (resp) => resp.url().includes("/api/stores/") && resp.status() === 200,
-    );
-    await page.reload();
-    await responsePromise;
+    // --- RELOAD (Para probar persistencia) ---
+    const [reloadResponse] = await Promise.all([
+      page.waitForResponse((resp) => resp.url().includes("/api/stores/") && resp.status() === 200),
+      page.reload(),
+    ]);
+    expect(reloadResponse.status()).toBe(200);
 
-    // --- ELIMINAR (Borrar la reseña) ---
-
-    // Asegurarse de que la sección de reseñas se renderizó
+    // --- ELIMINAR ---
     await expect(page.getByRole("heading", { name: "Reseñas" })).toBeVisible();
 
-    // Buscamos la tarjeta específica que contiene el texto editado
     const reviewCard = page.locator(".MuiPaper-root").filter({ hasText: reviewCommentEdited });
 
-    // Hacemos scroll para asegurar que playwrigt pueda interactuar con ella
+    await expect(reviewCard).toBeVisible({ timeout: 10000 });
     await reviewCard.scrollIntoViewIfNeeded();
-    await expect(reviewCard).toBeVisible();
 
-    // Dentro de esa tarjeta, buscamos el botón de eliminar
     const deleteButton = reviewCard
       .getByRole("button")
       .filter({ has: page.locator('svg[data-testid="DeleteIcon"]') });
 
-    // Aseguramos que el botón sea visible antes de clickear
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    // Confirmar en el diálogo
     await expect(page.getByText("¿Eliminar esta reseña?")).toBeVisible();
     await page.getByRole("button", { name: "Eliminar" }).click();
 
-    // Verificar que desapareció
     await expect(page.getByText("Reseña eliminada")).toBeVisible();
     await expect(page.getByText(reviewCommentEdited)).not.toBeVisible();
   });
