@@ -1,16 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { ThemeProvider, createTheme, responsiveFontSizes } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import StoreList from "./components/StoreList";
 import StoreDetails from "./components/StoreDetails";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-import auth from "./services/auth";
-import type { User } from "./types/types";
 import UserList from "./components/UserList";
 import StoreForm from "./components/StoreForm";
 import { CircularProgress, Box } from "@mui/material";
+import { useAuthStore } from "./stores/useAuthStore";
 
 let theme = createTheme({
   palette: {
@@ -80,25 +79,13 @@ let theme = createTheme({
 theme = responsiveFontSizes(theme);
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, isLoading, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await auth.getCurrentUser();
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    checkAuth();
+  }, [checkAuth]);
 
-    fetchUser();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -120,13 +107,13 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/" element={<StoreList user={user} setUser={setUser} />} />
-            <Route path="/store/:storeId" element={<StoreDetails user={user} />} />
-            <Route path="/login" element={<Login setUser={setUser} />} />
-            <Route path="/signup" element={<Signup setUser={setUser} />} />
+            <Route path="/" element={<StoreList />} />
+            <Route path="/store/:storeId" element={<StoreDetails />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route
               path="/users"
-              element={user?.role === "admin" ? <UserList user={user} /> : <Navigate to="/" />}
+              element={user?.role === "admin" ? <UserList /> : <Navigate to="/" />}
             />
             <Route
               path="/new-store"

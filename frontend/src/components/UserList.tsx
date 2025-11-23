@@ -20,13 +20,13 @@ import {
   Box,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useAuthStore } from "../stores/useAuthStore";
+import ConfirmDialog from "./ConfirmDialog";
 
-interface UserListProps {
-  user: User | null;
-}
-
-const UserList: React.FC<UserListProps> = ({ user }) => {
+const UserList: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
   const [users, setUsers] = useState<User[]>([]);
+  const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -54,14 +54,20 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este usuario?")) {
-      try {
-        await server.deleteUser(userId);
-        setUsers(users.filter((u) => u.id !== userId));
-      } catch {
-        setError("Error al eliminar el usuario");
-      }
+  const handleDeleteClick = (id: string) => {
+    setUserIdToDelete(id);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userIdToDelete) return;
+
+    try {
+      await server.deleteUser(userIdToDelete);
+      setUsers(users.filter((u) => u.id !== userIdToDelete));
+      setUserIdToDelete(null);
+    } catch {
+      setError("Error al eliminar el usuario");
+      setUserIdToDelete(null);
     }
   };
 
@@ -120,7 +126,7 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
                   <Button
                     variant="contained"
                     color="error"
-                    onClick={() => handleDeleteUser(u.id)}
+                    onClick={() => handleDeleteClick(u.id)}
                     disabled={u.id === user?.id}
                   >
                     Eliminar
@@ -131,6 +137,13 @@ const UserList: React.FC<UserListProps> = ({ user }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <ConfirmDialog
+        open={!!userIdToDelete}
+        title="Eliminar Usuario"
+        content="¿Estás seguro de que quieres eliminar este usuario? Perderá acceso al sistema."
+        onClose={() => setUserIdToDelete(null)}
+        onConfirm={confirmDeleteUser}
+      />
     </Container>
   );
 };

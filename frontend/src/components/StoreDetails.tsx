@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import server from "../services/server";
-import type { StoreWithDetails, StoreReview, User, StoreItem } from "../types/types";
+import type { StoreWithDetails, StoreReview, StoreItem } from "../types/types";
 import ReviewForm from "./ReviewForm";
 import ItemForm from "./ItemForm";
 import {
@@ -23,12 +23,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuthStore } from "../stores/useAuthStore";
+import ConfirmDialog from "./ConfirmDialog";
 
-interface StoreDetailsProps {
-  user: User | null;
-}
-
-const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
+const StoreDetails: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const [store, setStore] = useState<StoreWithDetails | null>(null);
@@ -36,6 +35,9 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
+  const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
+  const [deleteReviewDialogOpen, setDeleteReviewDialogOpen] = useState(false);
+  const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
 
   const handleReviewAdded = (newReview: StoreReview) => {
     if (store) {
@@ -62,11 +64,16 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
     setShowItemForm(false);
   };
 
-  const handleDeleteReview = async (reviewId: string) => {
-    if (!store) return;
+  const handleDeleteReviewClick = (reviewId: string) => {
+    setDeleteReviewId(reviewId);
+    setDeleteReviewDialogOpen(true);
+  };
+
+  const confirmDeleteReview = async () => {
+    if (!deleteReviewId || !store) return;
     try {
-      await server.deleteStoreReview(reviewId);
-      const updatedReviews = store.reviews.filter((r) => r.id !== reviewId);
+      await server.deleteStoreReview(deleteReviewId);
+      const updatedReviews = store.reviews.filter((r) => r.id !== deleteReviewId);
       const newAverageRating =
         updatedReviews.length > 0
           ? updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length
@@ -79,17 +86,24 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
       });
     } catch {
       setError("Failed to delete review");
+    } finally {
+      setDeleteReviewDialogOpen(false);
+      setDeleteReviewId(null);
     }
   };
 
-  const handleDeleteStore = async () => {
-    if (store && window.confirm(`¿Estás seguro de que quieres eliminar ${store.name}?`)) {
-      try {
-        await server.deleteStore(store.id);
-        navigate("/");
-      } catch {
-        setError("Error al eliminar la tienda");
-      }
+  const handleDeleteStoreClick = () => {
+    setDeleteStoreDialogOpen(true);
+  };
+
+  const confirmDeleteStore = async () => {
+    if (!store) return;
+    try {
+      await server.deleteStore(store.id);
+      navigate("/");
+    } catch {
+      setError("Error al eliminar la tienda");
+      setDeleteStoreDialogOpen(false);
     }
   };
 
@@ -112,7 +126,12 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
   if (loading)
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
       >
         <CircularProgress />
       </Box>
@@ -144,7 +163,12 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
           }}
         />
         <Box
-          sx={{ position: "absolute", width: "100%", height: "100%", bgcolor: "rgba(0,0,0,0.6)" }}
+          sx={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            bgcolor: "rgba(0,0,0,0.6)",
+          }}
         />
         <Container
           sx={{
@@ -194,7 +218,7 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
               variant="contained"
               color="error"
               startIcon={<DeleteIcon />}
-              onClick={handleDeleteStore}
+              onClick={handleDeleteStoreClick}
             >
               Eliminar Tienda
             </Button>
@@ -203,7 +227,12 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
 
         <Box sx={{ mb: 6 }}>
           <Box
-            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
           >
             <Typography variant="h4" component="h2">
               Productos
@@ -244,7 +273,12 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
 
         <Box>
           <Box
-            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
           >
             <Typography variant="h4" component="h2">
               Reseñas
@@ -276,7 +310,7 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
                       <Button
                         size="small"
                         color="error"
-                        onClick={() => handleDeleteReview(review.id)}
+                        onClick={() => handleDeleteReviewClick(review.id)}
                       >
                         <DeleteIcon fontSize="small" />
                       </Button>
@@ -320,6 +354,27 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ user }) => {
           onCancel={() => setShowItemForm(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteStoreDialogOpen}
+        title="Eliminar Tienda"
+        content={`¿Estás seguro de que quieres eliminar ${store?.name}? Esta acción no se puede
+          deshacer.`}
+        onClose={() => setDeleteStoreDialogOpen(false)}
+        onConfirm={confirmDeleteStore}
+      />
+
+      <ConfirmDialog
+        open={deleteReviewDialogOpen}
+        title="Eliminar Reseña"
+        content="¿Estás seguro de que quieres eliminar esta reseña? Esta acción no se puede
+          deshacer."
+        onClose={() => {
+          setDeleteReviewDialogOpen(false);
+          setDeleteReviewId(null);
+        }}
+        onConfirm={confirmDeleteReview}
+      />
     </>
   );
 };

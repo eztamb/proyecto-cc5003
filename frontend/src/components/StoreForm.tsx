@@ -186,7 +186,7 @@ const StoreForm: React.FC = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             disabled={loading}
             sx={{ mb: 4 }}
           >

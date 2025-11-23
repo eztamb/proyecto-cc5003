@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
-import auth from "../services/auth";
-import type { User } from "../types/types";
+import { useAuthStore } from "../stores/useAuthStore";
 import {
   Container,
   Box,
@@ -14,11 +13,7 @@ import {
   Divider,
 } from "@mui/material";
 
-interface SignupProps {
-  setUser: (user: User | null) => void;
-}
-
-const Signup: React.FC<SignupProps> = ({ setUser }) => {
+const Signup: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,8 +21,9 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const { signup, login } = useAuthStore();
+
   const handleGuestLogin = () => {
-    setUser(null);
     navigate("/");
   };
 
@@ -48,9 +44,9 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
     setLoading(true);
 
     try {
-      await auth.signup({ username, password });
-      const loggedInUser = await auth.login({ username, password });
-      setUser(loggedInUser);
+      await signup({ username, password });
+      await login({ username, password });
+
       navigate("/");
     } catch (err: unknown) {
       const isAxiosLikeError = (error: unknown): error is { response: { status?: number } } =>

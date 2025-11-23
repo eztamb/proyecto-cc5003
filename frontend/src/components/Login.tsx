@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
-import auth from "../services/auth";
-import type { User } from "../types/types";
 import {
   Container,
   Box,
@@ -13,37 +11,35 @@ import {
   CircularProgress,
   Divider,
 } from "@mui/material";
+import { useAuthStore } from "../stores/useAuthStore";
 
-interface LoginProps {
-  setUser: (user: User | null) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ setUser }) => {
+const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  const login = useAuthStore((state) => state.login);
+
   const handleGuestLogin = () => {
-    setUser(null);
+    // No necesitamos hacer nada en el store, user ya es null por defecto
     navigate("/");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
-      const loggedInUser = await auth.login({ username, password });
-      setUser(loggedInUser);
+      await login({ username, password }); // Usar acción del store
       navigate("/");
     } catch (err) {
       setError("Invalid username or password");
       console.error("Login error:", err);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -65,7 +61,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
             autoFocus
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            disabled={loading}
+            disabled={isSubmitting}
           />
           <TextField
             margin="normal"
@@ -78,15 +74,21 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
+            disabled={isSubmitting}
           />
           {error && (
             <Alert severity="error" className="w-full mt-2">
               {error}
             </Alert>
           )}
-          <Button type="submit" fullWidth variant="contained" sx={{ my: 2 }} disabled={loading}>
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Iniciar Sesión"}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ my: 2 }}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Iniciar Sesión"}
           </Button>
           <Link component={RouterLink} to="/signup" variant="body2">
             ¿No tienes cuenta? Regístrate aquí
@@ -96,7 +98,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
             fullWidth
             variant="outlined"
             onClick={handleGuestLogin}
-            disabled={loading}
+            disabled={isSubmitting}
             sx={{ mb: 4 }}
           >
             Continuar como invitado
