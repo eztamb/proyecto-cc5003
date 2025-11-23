@@ -123,6 +123,7 @@ const UserList: React.FC = () => {
                     disabled={u.id === user?.id}
                   >
                     <MenuItem value="reviewer">Reviewer</MenuItem>
+                    <MenuItem value="seller">Vendedor</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                   </Select>
                 </TableCell>

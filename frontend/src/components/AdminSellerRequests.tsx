@@ -49,7 +49,7 @@ const AdminSellerRequests: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Solicitudes de Vendedor
       </Typography>
-      <Paper>
+      <Paper sx={{ my: 4 }}>
         <Table>
           <TableHead>
             <TableRow>
