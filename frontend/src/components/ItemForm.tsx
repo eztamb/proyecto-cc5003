@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import server from "../services/server";
 import type { StoreItem, NewItem } from "../types/types";
-import { Modal, Box, Typography, TextField, Button, CircularProgress, Alert } from "@mui/material";
+import { Modal, Box, Typography, TextField, Button, CircularProgress } from "@mui/material";
+import { useUIStore } from "../stores/useUIStore";
 
 interface ItemFormProps {
   storeId: string;
@@ -26,12 +27,11 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [picture, setPicture] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { showSnackbar } = useUIStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     const newItem: NewItem = {
@@ -44,9 +44,10 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
 
     try {
       const addedItem = await server.createStoreItem(newItem);
+      showSnackbar("Item agregado con éxito", "success");
       onItemAdded(addedItem);
     } catch {
-      setError("Error al agregar el item");
+      showSnackbar("Error al agregar el item", "error");
     } finally {
       setLoading(false);
     }
@@ -97,11 +98,6 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
             onChange={(e) => setPicture(e.target.value)}
             disabled={loading}
           />
-          {error && (
-            <Alert severity="error" className="mt-2">
-              {error}
-            </Alert>
-          )}
           <Box className="mt-4 flex justify-end gap-2">
             <Button onClick={onCancel} disabled={loading}>
               Cancelar

@@ -24,6 +24,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 import ConfirmDialog from "./ConfirmDialog";
 
 const StoreDetails: React.FC = () => {
@@ -38,6 +39,8 @@ const StoreDetails: React.FC = () => {
   const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
   const [deleteReviewDialogOpen, setDeleteReviewDialogOpen] = useState(false);
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
+
+  const { showSnackbar } = useUIStore();
 
   const handleReviewAdded = (newReview: StoreReview) => {
     if (store) {
@@ -84,8 +87,9 @@ const StoreDetails: React.FC = () => {
         reviews: updatedReviews,
         averageRating: Math.round(newAverageRating * 10) / 10,
       });
+      showSnackbar("Reseña eliminada", "success");
     } catch {
-      setError("Failed to delete review");
+      showSnackbar("Error al eliminar la reseña", "error");
     } finally {
       setDeleteReviewDialogOpen(false);
       setDeleteReviewId(null);
@@ -100,9 +104,10 @@ const StoreDetails: React.FC = () => {
     if (!store) return;
     try {
       await server.deleteStore(store.id);
+      showSnackbar("Tienda eliminada", "success");
       navigate("/");
     } catch {
-      setError("Error al eliminar la tienda");
+      showSnackbar("Error al eliminar la tienda", "error");
       setDeleteStoreDialogOpen(false);
     }
   };
@@ -251,7 +256,12 @@ const StoreDetails: React.FC = () => {
             {store.items.map((item) => (
               <Grid item key={item.id} xs={12} sm={6} md={4}>
                 <Card sx={{ height: "100%" }}>
-                  <CardMedia component="img" height="200" image={item.picture} alt={item.name} />
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={item.picture || "/images/placeholder-item.png"}
+                    alt={item.name}
+                  />
                   <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
                       {item.name}

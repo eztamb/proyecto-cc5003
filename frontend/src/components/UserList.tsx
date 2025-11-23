@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 import ConfirmDialog from "./ConfirmDialog";
 
 const UserList: React.FC = () => {
@@ -30,6 +31,7 @@ const UserList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { showSnackbar } = useUIStore();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,8 +51,9 @@ const UserList: React.FC = () => {
     try {
       await server.updateUserRole(userId, newRole);
       setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+      showSnackbar("Rol de usuario actualizado", "success");
     } catch {
-      setError("Error al cambiar el rol del usuario");
+      showSnackbar("Error al cambiar el rol del usuario", "error");
     }
   };
 
@@ -64,9 +67,10 @@ const UserList: React.FC = () => {
     try {
       await server.deleteUser(userIdToDelete);
       setUsers(users.filter((u) => u.id !== userIdToDelete));
+      showSnackbar("Usuario eliminado", "success");
       setUserIdToDelete(null);
     } catch {
-      setError("Error al eliminar el usuario");
+      showSnackbar("Error al eliminar el usuario", "error");
       setUserIdToDelete(null);
     }
   };

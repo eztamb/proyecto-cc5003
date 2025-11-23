@@ -6,38 +6,38 @@ import {
   TextField,
   Button,
   Typography,
-  Alert,
   Link,
   CircularProgress,
   Divider,
 } from "@mui/material";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const login = useAuthStore((state) => state.login);
+  const { showSnackbar } = useUIStore();
 
   const handleGuestLogin = () => {
-    // No necesitamos hacer nada en el store, user ya es null por defecto
     navigate("/");
+    showSnackbar("Bienvenido invitado", "info");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsSubmitting(true);
 
     try {
-      await login({ username, password }); // Usar acción del store
+      await login({ username, password });
+      showSnackbar("Inicio de sesión exitoso", "success");
       navigate("/");
     } catch (err) {
-      setError("Invalid username or password");
       console.error("Login error:", err);
+      showSnackbar("Usuario o contraseña incorrectos", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -76,11 +76,6 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             disabled={isSubmitting}
           />
-          {error && (
-            <Alert severity="error" className="w-full mt-2">
-              {error}
-            </Alert>
-          )}
           <Button
             type="submit"
             fullWidth

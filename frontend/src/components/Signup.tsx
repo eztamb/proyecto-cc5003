@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 import {
   Container,
   Box,
   TextField,
   Button,
   Typography,
-  Alert,
   Link,
   CircularProgress,
   Divider,
@@ -17,27 +17,27 @@ const Signup: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const { signup, login } = useAuthStore();
+  const { showSnackbar } = useUIStore();
 
   const handleGuestLogin = () => {
     navigate("/");
+    showSnackbar("Bienvenido invitado", "info");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      showSnackbar("Las contraseñas no coinciden", "warning");
       return;
     }
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+      showSnackbar("La contraseña debe tener al menos 6 caracteres", "warning");
       return;
     }
 
@@ -46,7 +46,7 @@ const Signup: React.FC = () => {
     try {
       await signup({ username, password });
       await login({ username, password });
-
+      showSnackbar("Cuenta creada con éxito", "success");
       navigate("/");
     } catch (err: unknown) {
       const isAxiosLikeError = (error: unknown): error is { response: { status?: number } } =>
@@ -56,9 +56,9 @@ const Signup: React.FC = () => {
         typeof (error as { response?: unknown }).response === "object";
 
       if (isAxiosLikeError(err) && err.response.status === 400) {
-        setError("El nombre de usuario ya existe");
+        showSnackbar("El nombre de usuario ya existe", "error");
       } else {
-        setError("Error al crear la cuenta. Intenta de nuevo.");
+        showSnackbar("Error al crear la cuenta. Intenta de nuevo.", "error");
       }
       console.error("Signup error:", err);
     } finally {
@@ -111,11 +111,6 @@ const Signup: React.FC = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={loading}
           />
-          {error && (
-            <Alert severity="error" className="w-full mt-2">
-              {error}
-            </Alert>
-          )}
           <Button type="submit" fullWidth variant="contained" sx={{ my: 2 }} disabled={loading}>
             {loading ? <CircularProgress size={24} color="inherit" /> : "Registrarse"}
           </Button>

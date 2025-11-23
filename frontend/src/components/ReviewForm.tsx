@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
 import server from "../services/server";
 import type { StoreReview, User } from "../types/types";
-import {
-  Modal,
-  Box,
-  Typography,
-  Rating,
-  TextField,
-  Button,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
+import { Modal, Box, Typography, Rating, TextField, Button, CircularProgress } from "@mui/material";
+import { useUIStore } from "../stores/useUIStore";
 
 interface ReviewFormProps {
   storeId?: string;
@@ -37,7 +29,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
   const [userName, setUserName] = useState<string>("");
   const [picture, setPicture] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { showSnackbar } = useUIStore();
 
   useEffect(() => {
     if (user) {
@@ -50,15 +43,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating || rating === 0) {
-      setError("Por favor selecciona una calificación");
+      showSnackbar("Por favor selecciona una calificación", "warning");
       return;
     }
     if (comment.trim().length === 0) {
-      setError("Por favor escribe un comentario");
+      showSnackbar("Por favor escribe un comentario", "warning");
       return;
     }
     setIsSubmitting(true);
-    setError(null);
+
     try {
       const reviewData = {
         storeId,
@@ -68,9 +61,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
         ...(picture.trim() && { picture: picture.trim() }),
       };
       const newReview = await server.createStoreReview(reviewData);
+      showSnackbar("Reseña agregada con éxito", "success");
       onReviewAdded(newReview);
     } catch {
-      setError("Error al enviar la reseña. Por favor intenta nuevamente.");
+      showSnackbar("Error al enviar la reseña", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -119,11 +113,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
             onChange={(e) => setPicture(e.target.value)}
             disabled={isSubmitting}
           />
-          {error && (
-            <Alert severity="error" className="mt-2">
-              {error}
-            </Alert>
-          )}
           <Box className="mt-4 flex justify-end gap-2">
             <Button onClick={onCancel} disabled={isSubmitting}>
               Cancelar

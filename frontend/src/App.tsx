@@ -10,6 +10,7 @@ import UserList from "./components/UserList";
 import StoreForm from "./components/StoreForm";
 import { CircularProgress, Box } from "@mui/material";
 import { useAuthStore } from "./stores/useAuthStore";
+import NotificationSnackbar from "./components/NotificationSnackbar";
 
 let theme = createTheme({
   palette: {
@@ -104,6 +105,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <NotificationSnackbar />
       <Router>
         <div className="App">
           <Routes>
