@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import server from "../services/server";
 import type { NewStore } from "../types/types";
+import { useUIStore } from "../stores/useUIStore";
 import {
   Container,
   Box,
@@ -9,7 +10,6 @@ import {
   Button,
   Typography,
   CircularProgress,
-  Alert,
   Checkbox,
   FormControlLabel,
   Select,
@@ -31,18 +31,19 @@ const categories = [
 const StoreForm: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
+  const { showSnackbar } = useUIStore();
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [storeCategory, setStoreCategory] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [junaeb, setJunaeb] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (storeId) {
-      setLoading(true); // Start loading when fetching existing store data
+      setLoading(true);
       const fetchStore = async () => {
         try {
           const store = await server.getStoreById(storeId);
@@ -53,18 +54,17 @@ const StoreForm: React.FC = () => {
           setImages(store.images);
           setJunaeb(store.junaeb);
         } catch {
-          setError("Error al cargar la tienda");
+          showSnackbar("Error al cargar los datos de la tienda", "error");
         } finally {
-          setLoading(false); // Stop loading after fetching or error
+          setLoading(false);
         }
       };
       fetchStore();
     }
-  }, [storeId]);
+  }, [storeId, showSnackbar]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     const storeData: NewStore = {
@@ -72,7 +72,6 @@ const StoreForm: React.FC = () => {
       description,
       location,
       storeCategory,
-      // Filter out empty strings from images array
       images: images.map((img) => img.trim()).filter((img) => img !== ""),
       junaeb,
     };
@@ -80,15 +79,16 @@ const StoreForm: React.FC = () => {
     try {
       if (storeId) {
         await server.updateStore(storeId, storeData);
+        showSnackbar("Tienda actualizada con éxito", "success");
       } else {
         await server.createStore(storeData);
+        showSnackbar("Tienda creada con éxito", "success");
       }
       navigate("/");
     } catch {
-      setError("Error al guardar la tienda");
-      setLoading(false); // Ensure loading stops on error
+      showSnackbar("Error al guardar la tienda", "error");
+      setLoading(false);
     }
-    // No need for finally here as navigate will unmount the component
   };
 
   const handleCategoryChange = (event: SelectChangeEvent<string>) => {
@@ -152,7 +152,6 @@ const StoreForm: React.FC = () => {
             fullWidth
             label="Imágenes (URL separadas por comas)"
             value={images.join(",")}
-            // Split by comma, trim whitespace, and update state
             onChange={(e) => setImages(e.target.value.split(",").map((s) => s.trim()))}
             disabled={loading}
             helperText="Separe múltiples URLs con comas."
@@ -168,11 +167,6 @@ const StoreForm: React.FC = () => {
             label="Acepta Junaeb"
             sx={{ display: "block", mt: 1 }}
           />
-          {error && (
-            <Alert severity="error" className="w-full mt-2">
-              {error}
-            </Alert>
-          )}
           <Button
             type="submit"
             fullWidth
@@ -186,7 +180,7 @@ const StoreForm: React.FC = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             disabled={loading}
             sx={{ mb: 4 }}
           >
