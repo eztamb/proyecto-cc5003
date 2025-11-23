@@ -1,42 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Link,
-  CircularProgress,
-  Divider,
-} from "@mui/material";
-import { useAuthStore } from "../stores/useAuthStore";
-import { useUIStore } from "../stores/useUIStore";
+import { Container, Box, TextField, Button, Typography, Link, Divider } from "@mui/material";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import LoadingButton from "../common/LoadingButton";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  const login = useAuthStore((state) => state.login);
+  const { login } = useAuthStore();
   const { showSnackbar } = useUIStore();
-
-  const handleGuestLogin = () => {
-    navigate("/");
-    showSnackbar("Bienvenido, invitado", "info");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
       await login({ username, password });
       showSnackbar("Inicio de sesión exitoso", "success");
       navigate("/");
-    } catch (err) {
-      console.error("Login error:", err);
+    } catch {
       showSnackbar("Usuario o contraseña incorrectos", "error");
     } finally {
       setIsSubmitting(false);
@@ -56,8 +40,6 @@ const Login: React.FC = () => {
             fullWidth
             id="username"
             label="Usuario"
-            name="username"
-            autoComplete="username"
             autoFocus
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -71,20 +53,21 @@ const Login: React.FC = () => {
             label="Contraseña"
             type="password"
             id="password"
-            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isSubmitting}
           />
-          <Button
+
+          <LoadingButton
             type="submit"
             fullWidth
             variant="contained"
             sx={{ my: 2 }}
-            disabled={isSubmitting}
+            loading={isSubmitting}
           >
-            {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Iniciar Sesión"}
-          </Button>
+            Iniciar Sesión
+          </LoadingButton>
+
           <Link component={RouterLink} to="/signup" variant="body2">
             ¿No tienes cuenta? Regístrate aquí
           </Link>
@@ -92,7 +75,10 @@ const Login: React.FC = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={handleGuestLogin}
+            onClick={() => {
+              navigate("/");
+              showSnackbar("Bienvenido, invitado", "info");
+            }}
             disabled={isSubmitting}
             sx={{ mb: 4 }}
           >

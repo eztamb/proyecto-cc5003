@@ -22,13 +22,20 @@ test.describe("Autenticación y Acceso Protegido", () => {
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Cuenta creada con éxito")).toBeVisible();
 
-    // 5. Verificar acceso a elementos protegidos (Botón Logout y nombre de usuario en Navbar)
-    // Estos elementos solo aparecen si user != null en el Store
-    await expect(page.getByRole("button", { name: "Logout" })).toBeVisible();
-    await expect(page.getByText(username)).toBeVisible();
+    // 5. Verificar acceso a elementos protegidos
+    // El nombre de usuario debe estar visible en el Navbar
+    const userMenuButton = page.getByRole("button", { name: username });
+    await expect(userMenuButton).toBeVisible();
 
     // 6. Probar Logout
-    await page.getByRole("button", { name: "Logout" }).click();
+    // Primero debemos hacer clic en el usuario para abrir el menú.
+    await userMenuButton.click();
+
+    // Ahora el botón de Logout debería ser visible
+    await expect(page.getByRole("menuitem", { name: "Logout" })).toBeVisible();
+    await page.getByRole("menuitem", { name: "Logout" }).click();
+
+    // Verificar redirección al login
     await expect(page).toHaveURL("/login");
     await expect(page.getByRole("button", { name: "Iniciar Sesión" })).toBeVisible();
   });

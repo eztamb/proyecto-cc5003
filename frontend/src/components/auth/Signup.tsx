@@ -1,68 +1,61 @@
 import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
-import { useAuthStore } from "../stores/useAuthStore";
-import { useUIStore } from "../stores/useUIStore";
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Link,
-  CircularProgress,
-  Divider,
-} from "@mui/material";
+import { Container, Box, TextField, Button, Typography, Link, Divider } from "@mui/material";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import LoadingButton from "../common/LoadingButton";
 
 const Signup: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const navigate = useNavigate();
   const { signup, login } = useAuthStore();
   const { showSnackbar } = useUIStore();
 
-  const handleGuestLogin = () => {
-    navigate("/");
-    showSnackbar("Bienvenido, invitado", "info");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUsernameError("");
+    setPasswordError("");
+
+    let valid = true;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+    if (username.length < 3) {
+      setUsernameError("El usuario debe tener al menos 3 caracteres.");
+      valid = false;
+    } else if (!usernameRegex.test(username)) {
+      setUsernameError("El usuario solo puede contener letras, números y guiones bajos.");
+      valid = false;
+    }
+
+    if (password.length < 6) {
+      setPasswordError("La contraseña debe tener al menos 6 caracteres.");
+      valid = false;
+    }
 
     if (password !== confirmPassword) {
       showSnackbar("Las contraseñas no coinciden", "warning");
       return;
     }
 
-    if (password.length < 6) {
-      showSnackbar("La contraseña debe tener al menos 6 caracteres", "warning");
-      return;
-    }
+    if (!valid) return;
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       await signup({ username, password });
       await login({ username, password });
       showSnackbar("Cuenta creada con éxito", "success");
       navigate("/");
-    } catch (err: unknown) {
-      const isAxiosLikeError = (error: unknown): error is { response: { status?: number } } =>
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error &&
-        typeof (error as { response?: unknown }).response === "object";
-
-      if (isAxiosLikeError(err) && err.response.status === 400) {
-        showSnackbar("El nombre de usuario ya existe", "error");
-      } else {
-        showSnackbar("Error al crear la cuenta. Intenta de nuevo.", "error");
-      }
-      console.error("Signup error:", err);
+    } catch {
+      showSnackbar("Error al crear la cuenta.", "error");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -79,11 +72,12 @@ const Signup: React.FC = () => {
             fullWidth
             id="username"
             label="Usuario"
-            name="username"
-            autoComplete="username"
+            autoFocus
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            disabled={loading}
+            disabled={isSubmitting}
+            error={!!usernameError}
+            helperText={usernameError}
           />
           <TextField
             margin="normal"
@@ -93,10 +87,11 @@ const Signup: React.FC = () => {
             label="Contraseña"
             type="password"
             id="password"
-            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
+            disabled={isSubmitting}
+            error={!!passwordError}
+            helperText={passwordError}
           />
           <TextField
             margin="normal"
@@ -106,14 +101,21 @@ const Signup: React.FC = () => {
             label="Confirmar Contraseña"
             type="password"
             id="confirmPassword"
-            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={loading}
+            disabled={isSubmitting}
           />
-          <Button type="submit" fullWidth variant="contained" sx={{ my: 2 }} disabled={loading}>
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Registrarse"}
-          </Button>
+
+          <LoadingButton
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ my: 2 }}
+            loading={isSubmitting}
+          >
+            Registrarse
+          </LoadingButton>
+
           <Link component={RouterLink} to="/login" variant="body2">
             ¿Ya tienes cuenta? Inicia sesión aquí
           </Link>
@@ -121,8 +123,11 @@ const Signup: React.FC = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={handleGuestLogin}
-            disabled={loading}
+            onClick={() => {
+              navigate("/");
+              showSnackbar("Bienvenido, invitado", "info");
+            }}
+            disabled={isSubmitting}
             sx={{ mb: 4 }}
           >
             Continuar como invitado

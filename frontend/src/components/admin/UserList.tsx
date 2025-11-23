@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import server from "../services/server";
-import type { User } from "../types/types";
+import server from "../../services/server";
+import type { User } from "../../types/types";
 import {
   Container,
   Table,
@@ -20,9 +20,9 @@ import {
   Box,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useAuthStore } from "../stores/useAuthStore";
-import { useUIStore } from "../stores/useUIStore";
-import ConfirmDialog from "./ConfirmDialog";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 const UserList: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -123,6 +123,7 @@ const UserList: React.FC = () => {
                     disabled={u.id === user?.id}
                   >
                     <MenuItem value="reviewer">Reviewer</MenuItem>
+                    <MenuItem value="seller">Vendedor</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                   </Select>
                 </TableCell>

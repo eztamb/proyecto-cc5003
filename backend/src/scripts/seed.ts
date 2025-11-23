@@ -47,12 +47,18 @@ const seed = async () => {
       role: "admin",
     }).save();
 
+    // Mapa para cachear usuarios creados y no duplicarlos si aparecen en varias reseñas
+    // Clave: username, Valor: Documento de usuario
+    const usersCache = new Map<string, any>();
+    usersCache.set("admin", adminUser);
+
     // 3. Crear Tiendas y mapear IDs antiguos a nuevos ObjectIds
     const storeIdMap: Record<string, any> = {};
 
     for (const storeData of dbData.stores) {
       const { id, ...rest } = storeData;
-      const newStore = await new Store(rest).save();
+      // Asignamos al admin como dueño de las tiendas del seed
+      const newStore = await new Store({ ...rest, owner: adminUser._id }).save();
       storeIdMap[id] = newStore._id;
     }
 
@@ -65,22 +71,41 @@ const seed = async () => {
       }
     }
 
-    // 5. Crear Reviews
+    // 5. Crear Reviews (Con usuarios únicos para evitar colisiones)
+    const defaultPasswordHash = await bcrypt.hash("123456", 10);
+
     for (const reviewData of dbData.storeReviews) {
-      const { id, storeId, ...rest } = reviewData;
+      const { id, storeId, userName, ...rest } = reviewData;
       const storeObjectId = storeIdMap[storeId];
+
       if (storeObjectId) {
+        // Determinar el nombre de usuario: usar el del JSON o generar uno único basado en el ID de la reseña
+        const targetUsername = userName || `user_review_${id}`;
+
+        let reviewUser = usersCache.get(targetUsername);
+
+        // Si el usuario no existe en cache, lo creamos en la BD
+        if (!reviewUser) {
+          reviewUser = await new User({
+            username: targetUsername,
+            passwordHash: defaultPasswordHash,
+            role: "reviewer",
+          }).save();
+          usersCache.set(targetUsername, reviewUser);
+        }
+
         await new Review({
           ...rest,
           store: storeObjectId,
-          user: adminUser._id,
+          user: reviewUser._id,
+          userName: targetUsername, // Mantenemos consistencia visual
         }).save();
       }
     }
 
     console.log("✅ Seeding completado con éxito.");
 
-    // IMPORTANTE: Cerrar la conexión al terminar para que el script finalice
+    // Cerrar la conexión al terminar para que el script finalice
     await mongoose.connection.close();
     process.exit(0);
   } catch (error) {

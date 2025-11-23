@@ -16,6 +16,7 @@ interface IStore {
   location: string;
   images: string[];
   junaeb: boolean;
+  owner: mongoose.Types.ObjectId;
 }
 
 const storeSchema = new mongoose.Schema<IStore>({
@@ -46,6 +47,11 @@ const storeSchema = new mongoose.Schema<IStore>({
     required: true,
     default: false,
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 });
 
 type TransformReturnedObject = {
@@ -58,6 +64,7 @@ type TransformReturnedObject = {
   location: string;
   images: string[];
   junaeb: boolean;
+  owner: mongoose.Types.ObjectId;
 };
 
 storeSchema.set("toJSON", {

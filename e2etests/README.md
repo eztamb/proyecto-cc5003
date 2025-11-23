@@ -8,7 +8,7 @@ Este directorio contiene las pruebas End-to-End (E2E) automatizadas utilizando [
 2.  La aplicación **BeaucheFoods** (Backend y Frontend) debe estar ejecutándose localmente.
     - Frontend: `http://localhost:5173`
     - Backend: `http://localhost:3001`
-    - Puedes usar el script `start.sh` en la raíz del proyecto para levantar ambos.
+    - Puedes usar el script `start-test.sh` en la raíz del proyecto para levantar ambos.
 
 ## Instalación
 

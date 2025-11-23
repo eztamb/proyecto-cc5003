@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export interface IUser {
   username: string;
   passwordHash: string;
-  role: "admin" | "reviewer";
+  role: "admin" | "reviewer" | "seller";
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema<IUser>({
   role: {
     type: String,
     required: true,
-    enum: ["admin", "reviewer"],
+    enum: ["admin", "reviewer", "seller"],
     default: "reviewer",
   },
 });
@@ -30,7 +30,7 @@ type TransformReturnedObject = {
   passwordHash?: string;
   id?: string;
   username: string;
-  role: "admin" | "reviewer";
+  role: "admin" | "reviewer" | "seller";
 };
 
 userSchema.set("toJSON", {

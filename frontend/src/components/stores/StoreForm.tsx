@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import server from "../services/server";
-import type { NewStore } from "../types/types";
-import { useUIStore } from "../stores/useUIStore";
+import server from "../../services/server";
+import type { NewStore } from "../../types/types";
+import { useUIStore } from "../../stores/useUIStore";
 import {
   Container,
   Box,
@@ -18,6 +18,7 @@ import {
   FormControl,
   type SelectChangeEvent,
 } from "@mui/material";
+import { validateUrl } from "../../utils/validation";
 
 const categories = [
   "Cafetería",
@@ -40,6 +41,8 @@ const StoreForm: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [junaeb, setJunaeb] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [errors, setErrors] = useState<{ images?: string }>({});
 
   useEffect(() => {
     if (storeId) {
@@ -65,6 +68,18 @@ const StoreForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const processedImages = images.map((img) => img.trim()).filter((img) => img !== "");
+    const invalidImages = processedImages.some((img) => !validateUrl(img));
+
+    if (invalidImages) {
+      setErrors({ images: "Una o más URLs de imagen no son válidas." });
+      showSnackbar("Revisa las URLs de las imágenes", "warning");
+      return;
+    } else {
+      setErrors({});
+    }
+
     setLoading(true);
 
     const storeData: NewStore = {
@@ -72,7 +87,7 @@ const StoreForm: React.FC = () => {
       description,
       location,
       storeCategory,
-      images: images.map((img) => img.trim()).filter((img) => img !== ""),
+      images: processedImages,
       junaeb,
     };
 
@@ -87,6 +102,7 @@ const StoreForm: React.FC = () => {
       navigate("/");
     } catch {
       showSnackbar("Error al guardar la tienda", "error");
+    } finally {
       setLoading(false);
     }
   };
@@ -110,6 +126,8 @@ const StoreForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={loading}
+            inputProps={{ maxLength: 50 }}
+            helperText={`${name.length}/50 caracteres`}
           />
           <TextField
             margin="normal"
@@ -121,6 +139,8 @@ const StoreForm: React.FC = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={loading}
+            inputProps={{ maxLength: 250 }}
+            helperText={`${description.length}/250 caracteres`}
           />
           <TextField
             margin="normal"
@@ -130,6 +150,7 @@ const StoreForm: React.FC = () => {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             disabled={loading}
+            inputProps={{ maxLength: 100 }}
           />
           <FormControl fullWidth margin="normal" required disabled={loading}>
             <InputLabel id="category-select-label">Categoría</InputLabel>
@@ -152,9 +173,10 @@ const StoreForm: React.FC = () => {
             fullWidth
             label="Imágenes (URL separadas por comas)"
             value={images.join(",")}
-            onChange={(e) => setImages(e.target.value.split(",").map((s) => s.trim()))}
+            onChange={(e) => setImages(e.target.value.split(","))}
             disabled={loading}
-            helperText="Separe múltiples URLs con comas."
+            error={!!errors.images}
+            helperText={errors.images || "Separe múltiples URLs con comas."}
           />
           <FormControlLabel
             control={

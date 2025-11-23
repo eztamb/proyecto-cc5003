@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { User } from "../types/types";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -12,17 +13,15 @@ interface SignupCredentials {
   password: string;
 }
 
-interface User {
-  username: string;
-  id: string;
-  role: "admin" | "reviewer";
-}
-
 const CSRF_TOKEN_KEY = "csrfToken";
+
+const getCsrfToken = (): string | null => {
+  return localStorage.getItem(CSRF_TOKEN_KEY);
+};
 
 const login = async (credentials: LoginCredentials): Promise<User> => {
   const response = await axios.post(`${API_URL}/auth/login`, credentials, {
-    withCredentials: true, // enviar cookies
+    withCredentials: true,
   });
 
   const token = response.headers["x-csrf-token"];
@@ -65,10 +64,6 @@ const getCurrentUser = async (): Promise<User> => {
     },
   });
   return response.data;
-};
-
-const getCsrfToken = (): string | null => {
-  return localStorage.getItem(CSRF_TOKEN_KEY);
 };
 
 export default {

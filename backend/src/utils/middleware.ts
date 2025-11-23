@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 interface UserPayload {
   id: string;
   username: string;
-  role: "admin" | "reviewer";
+  role: "admin" | "reviewer" | "seller";
 }
 
 declare global {
@@ -24,14 +24,14 @@ const unknownEndpoint = (_req: Request, res: Response) => {
 // este es nuestro manejador de errores centralizado
 // se identifica como un middleware de errores porque tiene 4 parámetros
 const errorHandler = (error: Error, _req: Request, res: Response, next: NextFunction) => {
-  console.error(error.message); // imprimimos el error en la consola
+  console.error(error.message);
 
   if (error.name === "CastError") {
     return res.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
     return res.status(400).json({ error: error.message });
   } else if (error.name === "MongoServerError" && (error as MongoServerError).code === 11000) {
-    return res.status(400).json({ error: "expected `username` to be unique" });
+    return res.status(400).json({ error: "duplicate key error" });
   } else if (error.name === "JsonWebTokenError") {
     return res.status(401).json({ error: "invalid token" });
   } else if (error.name === "TokenExpiredError") {
@@ -51,7 +51,7 @@ const auth = (req: Request, _res: Response, next: NextFunction) => {
     // si falta alguno de los tokens, lanzamos un error que será capturado
     // por nuestro errorHandler
     const error = new Error("token or csrf token missing");
-    error.name = "JsonWebTokenError"; // lo tratamos como un token inválido
+    error.name = "JsonWebTokenError";
     throw error;
   }
 
@@ -64,7 +64,7 @@ const auth = (req: Request, _res: Response, next: NextFunction) => {
   const decodedToken = jwt.verify(token, JWT_SECRET) as {
     id: string;
     username: string;
-    role: "admin" | "reviewer";
+    role: "admin" | "reviewer" | "seller";
     csrf: string;
   };
 
@@ -82,11 +82,18 @@ const auth = (req: Request, _res: Response, next: NextFunction) => {
     role: decodedToken.role,
   };
 
-  next(); // pasamos al siguiente middleware o a la ruta
+  next();
 };
 
 const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "operation not permitted" });
+  }
+  next();
+};
+
+const isSellerOrAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== "admin" && req.user?.role !== "seller") {
     return res.status(403).json({ error: "operation not permitted" });
   }
   next();
@@ -97,4 +104,5 @@ export default {
   errorHandler,
   auth,
   isAdmin,
+  isSellerOrAdmin,
 };
