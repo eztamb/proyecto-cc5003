@@ -261,6 +261,13 @@ const StoreDetails: React.FC = () => {
                     height="200"
                     image={item.picture || "/images/placeholder-item.png"}
                     alt={item.name}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/images/placeholder-item.png";
+                    }}
+                    sx={{
+                      objectFit: "cover",
+                      width: "100%",
+                    }}
                   />
                   <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
@@ -333,10 +340,15 @@ const StoreDetails: React.FC = () => {
                       <img
                         src={review.picture}
                         alt="Review"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/images/placeholder-reviews.png";
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
                         style={{
                           maxWidth: "100%",
                           maxHeight: "300px",
                           borderRadius: "8px",
+                          objectFit: "cover",
                         }}
                       />
                     </Box>

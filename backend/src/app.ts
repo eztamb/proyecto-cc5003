@@ -17,17 +17,22 @@ dotenv.config();
 
 const app = express();
 
-// --- conexión a la base de datos ---
-const MONGODB_URI = process.env.MONGODB_URI;
+// --- Configuración de Base de Datos Dinámica ---
+// Si estamos en modo 'test', usamos la base de datos de prueba
+const isTestEnv = process.env.NODE_ENV === "test";
+const MONGODB_URI = isTestEnv ? process.env.TEST_MONGODB_URI : process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI is not defined in .env file");
+  throw new Error(`MONGODB_URI is not defined in .env file (Environment: ${process.env.NODE_ENV})`);
 }
 
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
-    console.log("connected to mongodb");
+    // Solo logeamos si NO estamos en tests para no ensuciar la consola de Playwright
+    if (!isTestEnv) {
+      console.log(`connected to mongodb (${isTestEnv ? "TEST" : "DEV"} environment)`);
+    }
   })
   .catch((error: unknown) => {
     const errorMessage = error instanceof Error ? error.message : "unknown error";
@@ -60,6 +65,13 @@ app.use(middleware.errorHandler);
 // --- configuración del servidor ---
 const PORT = 3001;
 
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
-});
+// Exportamos el servidor para poder iniciarlo desde otros scripts si fuera necesario,
+// o prevenir que se inicie dos veces en tests de integración unitarios.
+// Para este caso simple, mantenemos el listen aquí, pero condicionado si se requiriera.
+if (process.env.NODE_ENV !== "test_unit") {
+  app.listen(PORT, () => {
+    if (!isTestEnv) console.log(`server running on port ${PORT}`);
+  });
+}
+
+export default app;

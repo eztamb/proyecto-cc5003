@@ -25,7 +25,7 @@ const Signup: React.FC = () => {
 
   const handleGuestLogin = () => {
     navigate("/");
-    showSnackbar("Bienvenido invitado", "info");
+    showSnackbar("Bienvenido, invitado", "info");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

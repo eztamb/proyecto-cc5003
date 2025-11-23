@@ -191,7 +191,12 @@ const StoreList: React.FC = () => {
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "/images/placeholder.png";
                       }}
-                      sx={{ flexShrink: 0 }}
+                      sx={{
+                        flexShrink: 0,
+                        objectFit: "cover",
+                        height: "200px",
+                        width: "100%",
+                      }}
                     />
                     <CardContent sx={{ flexGrow: 1, width: "100%" }}>
                       <Typography gutterBottom variant="h5">
