@@ -13,6 +13,7 @@ export interface Store {
   images: string[];
   junaeb: boolean;
   owner: string;
+  averageRating?: number;
 }
 
 export interface NewStore {

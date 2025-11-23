@@ -27,6 +27,8 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SearchIcon from "@mui/icons-material/Search";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -49,9 +51,7 @@ const categories = [
 
 const StoreList: React.FC = () => {
   const navigate = useNavigate();
-
   const { user, logout } = useAuthStore();
-
   const { stores, loading, error, filters, fetchStores, setSearch, setCategory } = useShopStore();
 
   const [localSearchTerm, setLocalSearchTerm] = useState(filters.search);
@@ -91,34 +91,80 @@ const StoreList: React.FC = () => {
       >
         <Toolbar>
           <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <img src="/favicon.png" alt="Logo" style={{ height: "32px", marginRight: "10px" }} />
-            <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
-              BeaucheFoods
-            </Typography>
+            <Link
+              to="/"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <img src="/favicon.png" alt="Logo" style={{ height: "32px", marginRight: "10px" }} />
+              <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
+                BeaucheFoods
+              </Typography>
+            </Link>
           </Box>
 
-          {user ? (
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              {user.role === "admin" && (
-                <Button color="inherit" component={Link} to="/users" sx={{ mr: 1 }}>
-                  Administrar Usuarios
-                </Button>
-              )}
-              <Button color="inherit" onClick={handleLogout} sx={{ mr: 2 }}>
-                Logout
-              </Button>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <AccountCircleIcon sx={{ mr: 1 }} />
-                <Typography component="span">
-                  {user.username} ({user.role})
-                </Typography>
-              </Box>
-            </Box>
-          ) : (
-            <Button color="inherit" component={Link} to="/login">
-              Login
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {/* Enlace global para buscar productos */}
+            <Button
+              color="inherit"
+              component={Link}
+              to="/product-search"
+              startIcon={<SearchIcon />}
+            >
+              Buscar Productos
             </Button>
-          )}
+
+            {user ? (
+              <>
+                {/* Links según Rol */}
+                {user.role === "admin" && (
+                  <>
+                    <Button color="inherit" component={Link} to="/users">
+                      Usuarios
+                    </Button>
+                    <Button color="inherit" component={Link} to="/admin/requests">
+                      Solicitudes
+                    </Button>
+                  </>
+                )}
+
+                {(user.role === "seller" || user.role === "admin") && (
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/my-stores"
+                    startIcon={<StorefrontIcon />}
+                  >
+                    Mis Tiendas
+                  </Button>
+                )}
+
+                {user.role === "reviewer" && (
+                  <Button color="inherit" component={Link} to="/become-seller">
+                    ¡Sé Vendedor!
+                  </Button>
+                )}
+
+                <Button color="inherit" onClick={handleLogout}>
+                  Logout
+                </Button>
+                <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
+                  <AccountCircleIcon sx={{ mr: 1 }} />
+                  <Typography component="span" variant="body2">
+                    {user.username}
+                  </Typography>
+                </Box>
+              </>
+            ) : (
+              <Button color="inherit" component={Link} to="/login">
+                Login
+              </Button>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -127,6 +173,7 @@ const StoreList: React.FC = () => {
           <Typography variant="h4" component="h1" gutterBottom>
             Tiendas Disponibles
           </Typography>
+          {/* Solo admins ven botón directo de agregar, vendedores lo hacen desde "Mis Tiendas" */}
           {user?.role === "admin" && (
             <Button variant="contained" component={Link} to="/new-store">
               Agregar Tienda
@@ -174,11 +221,9 @@ const StoreList: React.FC = () => {
           <Grid container spacing={4}>
             {stores.map((store) => (
               <Grid item key={store.id} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-                {" "}
                 <Card
                   sx={{ height: "100%", display: "flex", flexDirection: "column", width: "100%" }}
                 >
-                  {" "}
                   <CardActionArea
                     onClick={() => handleStoreSelect(store.id)}
                     sx={{ display: "flex", flexDirection: "column", height: "100%" }}

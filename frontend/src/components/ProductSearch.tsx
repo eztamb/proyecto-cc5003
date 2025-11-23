@@ -49,7 +49,7 @@ const ProductSearch: React.FC = () => {
         Busca un Producto
       </Typography>
 
-      <Box component="form" onSubmit={handleSearch} sx={{ mb: 4, display: "flex", gap: 2 }}>
+      <Box component="form" onSubmit={handleSearch} sx={{ my: 4, display: "flex", gap: 2 }}>
         <TextField
           fullWidth
           label="Nombre del producto (ej: Monster, Empanada)"
@@ -82,7 +82,13 @@ const ProductSearch: React.FC = () => {
                   height="200"
                   image={item.picture || "/images/placeholder-item.png"}
                   alt={item.name}
-                  sx={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/images/placeholder-item.png";
+                  }}
+                  sx={{
+                    objectFit: "cover",
+                    width: "100%",
+                  }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6">{item.name}</Typography>

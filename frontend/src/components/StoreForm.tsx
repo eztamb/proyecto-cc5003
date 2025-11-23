@@ -87,6 +87,7 @@ const StoreForm: React.FC = () => {
       navigate("/");
     } catch {
       showSnackbar("Error al guardar la tienda", "error");
+    } finally {
       setLoading(false);
     }
   };

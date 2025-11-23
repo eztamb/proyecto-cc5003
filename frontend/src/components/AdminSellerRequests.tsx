@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Container,
   Table,
@@ -21,18 +21,18 @@ const AdminSellerRequests: React.FC = () => {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const { showSnackbar } = useUIStore();
 
-  useEffect(() => {
-    loadRequests();
-  }, []);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       const data = await server.getSellerRequests();
       setRequests(data);
     } catch {
       showSnackbar("Error al cargar solicitudes", "error");
     }
-  };
+  }, [showSnackbar]);
+
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     try {

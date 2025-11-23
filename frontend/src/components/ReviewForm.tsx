@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import server from "../services/server";
-import type { StoreReview, User } from "../types/types";
+import type { StoreReview, User, NewReview } from "../types/types";
 import { Modal, Box, Typography, Rating, TextField, Button, CircularProgress } from "@mui/material";
 import { useUIStore } from "../stores/useUIStore";
+import axios from "axios";
 
 interface ReviewFormProps {
-  storeId?: string;
+  storeId: string;
   onReviewAdded: (review: StoreReview) => void;
   onCancel: () => void;
   user: User | null;
+  initialReview?: StoreReview | null;
 }
 
 const style = {
-  position: "absolute",
+  position: "absolute" as const,
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
@@ -23,7 +25,13 @@ const style = {
   p: 4,
 };
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCancel, user }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({
+  storeId,
+  onReviewAdded,
+  onCancel,
+  user,
+  initialReview,
+}) => {
   const [rating, setRating] = useState<number | null>(0);
   const [comment, setComment] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
@@ -33,12 +41,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
   const { showSnackbar } = useUIStore();
 
   useEffect(() => {
-    if (user) {
+    if (initialReview) {
+      setRating(initialReview.rating);
+      setComment(initialReview.comment);
+      setUserName(initialReview.userName || (user ? user.username : ""));
+      setPicture(initialReview.picture || "");
+    } else if (user) {
       setUserName(user.username);
     }
-  }, [user]);
-
-  if (!storeId) return null;
+  }, [user, initialReview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,18 +64,33 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
     setIsSubmitting(true);
 
     try {
-      const reviewData = {
-        storeId,
+      const reviewData: Partial<NewReview> = {
         rating,
         comment: comment.trim(),
         ...(userName.trim() && { userName: userName.trim() }),
         ...(picture.trim() && { picture: picture.trim() }),
       };
-      const newReview = await server.createStoreReview(reviewData);
-      showSnackbar("Reseña agregada con éxito", "success");
-      onReviewAdded(newReview);
-    } catch {
-      showSnackbar("Error al enviar la reseña", "error");
+
+      let result: StoreReview;
+
+      if (initialReview) {
+        // Editar existente
+        result = await server.updateStoreReview(initialReview.id, reviewData);
+        showSnackbar("Reseña actualizada con éxito", "success");
+      } else {
+        // Crear nueva
+        const newReviewData = { ...reviewData, storeId } as NewReview;
+        result = await server.createStoreReview(newReviewData);
+        showSnackbar("Reseña agregada con éxito", "success");
+      }
+
+      onReviewAdded(result);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        showSnackbar(err.response.data.error, "error");
+      } else {
+        showSnackbar("Error al enviar la reseña", "error");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +100,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
     <Modal open onClose={onCancel}>
       <Box sx={style}>
         <Typography variant="h6" component="h2">
-          Agregar Reseña
+          {initialReview ? "Editar Reseña" : "Agregar Reseña"}
         </Typography>
         <Box component="form" onSubmit={handleSubmit} className="mt-4">
           <Typography component="legend">Calificación</Typography>
@@ -118,7 +144,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ storeId, onReviewAdded, onCance
               Cancelar
             </Button>
             <Button type="submit" variant="contained" disabled={isSubmitting}>
-              {isSubmitting ? <CircularProgress size={24} /> : "Enviar Reseña"}
+              {isSubmitting ? <CircularProgress size={24} /> : "Enviar"}
             </Button>
           </Box>
         </Box>

@@ -8,6 +8,10 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import UserList from "./components/UserList";
 import StoreForm from "./components/StoreForm";
+import ProductSearch from "./components/ProductSearch";
+import SellerApplication from "./components/SellerApplication";
+import AdminSellerRequests from "./components/AdminSellerRequests";
+import MyStores from "./components/MyStores";
 import { CircularProgress, Box } from "@mui/material";
 import { useAuthStore } from "./stores/useAuthStore";
 import NotificationSnackbar from "./components/NotificationSnackbar";
@@ -32,24 +36,12 @@ let theme = createTheme({
   },
   typography: {
     fontFamily: "Inter, sans-serif",
-    h1: {
-      fontWeight: 700,
-    },
-    h2: {
-      fontWeight: 700,
-    },
-    h3: {
-      fontWeight: 700,
-    },
-    h4: {
-      fontWeight: 700,
-    },
-    h5: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 600,
-    },
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 700 },
+    h3: { fontWeight: 700 },
+    h4: { fontWeight: 700 },
+    h5: { fontWeight: 600 },
+    h6: { fontWeight: 600 },
   },
   shape: {
     borderRadius: 8,
@@ -109,22 +101,61 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
+            {/* Rutas Públicas */}
             <Route path="/" element={<StoreList />} />
             <Route path="/store/:storeId" element={<StoreDetails />} />
+            <Route path="/product-search" element={<ProductSearch />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+
+            {/* Rutas Admin */}
             <Route
               path="/users"
               element={user?.role === "admin" ? <UserList /> : <Navigate to="/" />}
             />
             <Route
+              path="/admin/requests"
+              element={user?.role === "admin" ? <AdminSellerRequests /> : <Navigate to="/" />}
+            />
+
+            {/* Rutas Vendedor o Admin */}
+            <Route
               path="/new-store"
-              element={user?.role === "admin" ? <StoreForm /> : <Navigate to="/" />}
+              element={
+                user?.role === "admin" || user?.role === "seller" ? (
+                  <StoreForm />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
             />
             <Route
               path="/edit-store/:storeId"
-              element={user?.role === "admin" ? <StoreForm /> : <Navigate to="/" />}
+              element={
+                user?.role === "admin" || user?.role === "seller" ? (
+                  <StoreForm />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
             />
+            <Route
+              path="/my-stores"
+              element={
+                user?.role === "admin" || user?.role === "seller" ? (
+                  <MyStores />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+
+            {/* Rutas Reviewer */}
+            <Route
+              path="/become-seller"
+              element={user?.role === "reviewer" ? <SellerApplication /> : <Navigate to="/" />}
+            />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

@@ -31,63 +31,70 @@ const StoreDetails: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
+  const { showSnackbar } = useUIStore();
+
   const [store, setStore] = useState<StoreWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados para modales
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
   const [deleteReviewDialogOpen, setDeleteReviewDialogOpen] = useState(false);
-  const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
+
+  // Estado para manejo de reseñas (borrar/editar)
+  const [targetReviewId, setTargetReviewId] = useState<string | null>(null);
   const [userReview, setUserReview] = useState<StoreReview | null>(null);
 
   useEffect(() => {
+    const fetchStoreDetails = async () => {
+      if (!storeId) return;
+      try {
+        setLoading(true);
+        const data = await server.getStoreWithDetails(storeId);
+        setStore(data);
+      } catch {
+        setError("Failed to load store details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStoreDetails();
+  }, [storeId]);
+
+  useEffect(() => {
     if (store && user) {
+      // Buscar si el usuario actual ya tiene una reseña en esta tienda
       const existing = store.reviews.find((r) => r.user.id === user.id);
       setUserReview(existing || null);
     }
   }, [store, user]);
 
-  const handleReviewSubmit = async (reviewData: any) => {
-    try {
-      if (userReview) {
-        const updated = await server.updateStoreReview(userReview.id, reviewData);
-        if (store) {
-          const otherReviews = store.reviews.filter((r) => r.id !== userReview.id);
-          const newReviews = [...otherReviews, updated];
-          const avg = newReviews.reduce((acc, r) => acc + r.rating, 0) / newReviews.length;
-          setStore({ ...store, reviews: newReviews, averageRating: avg });
-        }
-        showSnackbar("Reseña actualizada", "success");
-      } else {
-        const newReview = await server.createStoreReview(reviewData);
-        if (store) {
-          const newReviews = [...store.reviews, newReview];
-          const avg = newReviews.reduce((acc, r) => acc + r.rating, 0) / newReviews.length;
-          setStore({ ...store, reviews: newReviews, averageRating: avg });
-        }
-        showSnackbar("Reseña creada", "success");
-      }
-      setShowReviewForm(false);
-    } catch {
-      showSnackbar(error.response?.data?.error || "Error", "error");
+  // Callback para cuando se crea O edita una reseña
+  const handleReviewSaved = (savedReview: StoreReview) => {
+    if (!store) return;
+
+    let updatedReviews: StoreReview[];
+
+    // Si ya existía la reseña (edición), reemplazamos. Si no, agregamos.
+    const exists = store.reviews.find((r) => r.id === savedReview.id);
+
+    if (exists) {
+      updatedReviews = store.reviews.map((r) => (r.id === savedReview.id ? savedReview : r));
+    } else {
+      updatedReviews = [...store.reviews, savedReview];
     }
-  };
 
-  const { showSnackbar } = useUIStore();
+    const newAverageRating =
+      updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length;
 
-  const handleReviewAdded = (newReview: StoreReview) => {
-    if (store) {
-      const updatedReviews = [...store.reviews, newReview];
-      const newAverageRating =
-        updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length;
+    setStore({
+      ...store,
+      reviews: updatedReviews,
+      averageRating: Math.round(newAverageRating * 10) / 10,
+    });
 
-      setStore({
-        ...store,
-        reviews: updatedReviews,
-        averageRating: Math.round(newAverageRating * 10) / 10,
-      });
-    }
     setShowReviewForm(false);
   };
 
@@ -102,15 +109,15 @@ const StoreDetails: React.FC = () => {
   };
 
   const handleDeleteReviewClick = (reviewId: string) => {
-    setDeleteReviewId(reviewId);
+    setTargetReviewId(reviewId);
     setDeleteReviewDialogOpen(true);
   };
 
   const confirmDeleteReview = async () => {
-    if (!deleteReviewId || !store) return;
+    if (!targetReviewId || !store) return;
     try {
-      await server.deleteStoreReview(deleteReviewId);
-      const updatedReviews = store.reviews.filter((r) => r.id !== deleteReviewId);
+      await server.deleteStoreReview(targetReviewId);
+      const updatedReviews = store.reviews.filter((r) => r.id !== targetReviewId);
       const newAverageRating =
         updatedReviews.length > 0
           ? updatedReviews.reduce((sum, review) => sum + review.rating, 0) / updatedReviews.length
@@ -121,12 +128,16 @@ const StoreDetails: React.FC = () => {
         reviews: updatedReviews,
         averageRating: Math.round(newAverageRating * 10) / 10,
       });
+      // Si borramos nuestra propia reseña, reseteamos userReview
+      if (userReview && userReview.id === targetReviewId) {
+        setUserReview(null);
+      }
       showSnackbar("Reseña eliminada", "success");
     } catch {
       showSnackbar("Error al eliminar la reseña", "error");
     } finally {
       setDeleteReviewDialogOpen(false);
-      setDeleteReviewId(null);
+      setTargetReviewId(null);
     }
   };
 
@@ -146,21 +157,8 @@ const StoreDetails: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchStoreDetails = async () => {
-      if (!storeId) return;
-      try {
-        setLoading(true);
-        const data = await server.getStoreWithDetails(storeId);
-        setStore(data);
-      } catch {
-        setError("Failed to load store details");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStoreDetails();
-  }, [storeId]);
+  const canManageStore =
+    user && (user.role === "admin" || (user.role === "seller" && store?.owner === user.id));
 
   if (loading)
     return (
@@ -243,7 +241,7 @@ const StoreDetails: React.FC = () => {
       </Box>
 
       <Container sx={{ py: 4 }}>
-        {user?.role === "admin" && (
+        {canManageStore && (
           <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
             <Button
               variant="outlined"
@@ -276,7 +274,7 @@ const StoreDetails: React.FC = () => {
             <Typography variant="h4" component="h2">
               Productos
             </Typography>
-            {user?.role === "admin" && (
+            {canManageStore && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
@@ -334,6 +332,9 @@ const StoreDetails: React.FC = () => {
             <Typography variant="h4" component="h2">
               Reseñas
             </Typography>
+
+            {/* Lógica: Mostrar botón si el usuario está logueado.
+                Si ya tiene reseña, dice "Editar". Si no, "Agregar". */}
             {user && (
               <Button
                 variant="contained"
@@ -367,7 +368,20 @@ const StoreDetails: React.FC = () => {
                       </Button>
                     )}
                   </Box>
-                  <Rating value={review.rating} readOnly sx={{ mb: 1 }} />
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    <Rating value={review.rating} readOnly size="small" />
+                    {review.updatedAt &&
+                      review.createdAt &&
+                      review.updatedAt > review.createdAt && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontStyle: "italic" }}
+                        >
+                          (Editado: {new Date(review.updatedAt).toLocaleDateString()})
+                        </Typography>
+                      )}
+                  </Box>
                   <Typography color="text.secondary">{review.comment}</Typography>
                   {review.picture && (
                     <Box sx={{ mt: 2 }}>
@@ -394,13 +408,13 @@ const StoreDetails: React.FC = () => {
         </Box>
       </Container>
 
-      {showReviewForm && (
-        // TODO: pasar valores iniciales al ReviewForm si existe userReview (actualizar ReviewForm para aceptar initialValues)
+      {showReviewForm && storeId && (
         <ReviewForm
           storeId={storeId}
-          onReviewAdded={handleReviewAdded}
+          onReviewAdded={handleReviewSaved}
           onCancel={() => setShowReviewForm(false)}
           user={user}
+          initialReview={userReview} // Pasar la reseña existente si la hay
         />
       )}
 
@@ -415,8 +429,7 @@ const StoreDetails: React.FC = () => {
       <ConfirmDialog
         open={deleteStoreDialogOpen}
         title="Eliminar Tienda"
-        content={`¿Estás seguro de que quieres eliminar ${store?.name}? Esta acción no se puede
-          deshacer.`}
+        content={`¿Estás seguro de que quieres eliminar ${store?.name}? Esta acción no se puede deshacer.`}
         onClose={() => setDeleteStoreDialogOpen(false)}
         onConfirm={confirmDeleteStore}
       />
@@ -424,11 +437,10 @@ const StoreDetails: React.FC = () => {
       <ConfirmDialog
         open={deleteReviewDialogOpen}
         title="Eliminar Reseña"
-        content="¿Estás seguro de que quieres eliminar esta reseña? Esta acción no se puede
-          deshacer."
+        content="¿Estás seguro de que quieres eliminar esta reseña? Esta acción no se puede deshacer."
         onClose={() => {
           setDeleteReviewDialogOpen(false);
-          setDeleteReviewId(null);
+          setTargetReviewId(null);
         }}
         onConfirm={confirmDeleteReview}
       />
