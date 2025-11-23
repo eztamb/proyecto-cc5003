@@ -27,9 +27,8 @@ test.describe("Administración de Tiendas (Requiere Rol Admin)", () => {
     await page.getByLabel("Ubicación").fill("Patio Central");
 
     // Seleccionar Categoría
-    // Nota: Usamos force: true o interacción específica si el select de MUI lo requiere,
-    // pero click standard suele funcionar si el label está bien asociado.
-    await page.getByLabel("Categoría").click();
+    // Usamos getByRole para asegurar la interacción con el Select de MUI
+    await page.getByRole("combobox", { name: /Categoría/i }).click();
     await page.getByRole("option", { name: "Otro" }).click();
 
     await page.getByLabel("Acepta Junaeb").check();
@@ -41,26 +40,26 @@ test.describe("Administración de Tiendas (Requiere Rol Admin)", () => {
     await expect(page.getByText("Tienda creada con éxito")).toBeVisible();
 
     // Verificar que aparece en la lista
-    await expect(page.getByRole("heading", { name: storeName })).toBeVisible();
+    // Corrección: StoreCard usa Typography component="div", por lo que no es un 'heading' semántico.
+    // Usamos getByText y filtramos para asegurarnos de que es el título de la tarjeta.
+    await expect(page.getByText(storeName)).toBeVisible();
 
     // --- ELIMINAR TIENDA ---
-    await page.getByRole("heading", { name: storeName }).click();
+    await page.getByText(storeName).click();
 
     // Verificar botones de admin en el detalle
-    await expect(page.getByRole("button", { name: "Eliminar Tienda" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Eliminar" })).toBeVisible();
 
     // Click Eliminar
-    await page.getByRole("button", { name: "Eliminar Tienda" }).click();
+    await page.getByRole("button", { name: "Eliminar" }).click();
 
     // Confirmar en el diálogo
-    await expect(
-      page.getByText(`¿Estás seguro de que quieres eliminar ${storeName}?`),
-    ).toBeVisible();
+    await expect(page.getByText(`¿Eliminar ${storeName}?`)).toBeVisible();
     await page.getByRole("button", { name: "Eliminar" }).click();
 
     // Verificar vuelta al inicio y desaparición
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Tienda eliminada")).toBeVisible();
-    await expect(page.getByRole("heading", { name: storeName })).not.toBeVisible();
+    await expect(page.getByText(storeName)).not.toBeVisible();
   });
 });

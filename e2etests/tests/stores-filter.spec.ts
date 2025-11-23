@@ -27,17 +27,20 @@ test.describe("Funcionalidad de Listado de Tiendas", () => {
     // Asegurarse que cargó la lista inicial
     await expect(page.getByText("Abuelita Yoli")).toBeVisible();
 
-    // Abrir el select de Material UI
-    // Nota: En MUI el select a veces es un div con role button o combobox asociado al label
-    await page.getByLabel("Categoría").click();
+    // Usamos una estrategia visual: buscar el FormControl que contiene el texto "Categoría"
+    // y dentro de él hacer click en el combobox.
+    await page
+      .locator(".MuiFormControl-root")
+      .filter({ hasText: "Categoría" })
+      .getByRole("combobox")
+      .click();
 
-    // Seleccionar la opción en el dropdown (portal)
     await page.getByRole("option", { name: "Food Truck" }).click();
 
-    // Verificar que solo aparece la tienda correspondiente
+    // Verificar resultados
     await expect(page.getByText("Abuelita Yoli")).toBeVisible();
-    await expect(page.getByText("Subway")).not.toBeVisible(); // Es Restaurante
-    await expect(page.getByText("Máquina Monster")).not.toBeVisible(); // Es Máquina
+    await expect(page.getByText("Subway")).not.toBeVisible();
+    await expect(page.getByText("Máquina Monster")).not.toBeVisible();
   });
 
   test("Debe mostrar mensaje cuando no hay resultados", async ({ page }) => {

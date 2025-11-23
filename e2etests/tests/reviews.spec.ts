@@ -10,7 +10,6 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
     // Registrar usuario antes de cada test para tener sesión
     await page.goto("/signup");
     await page.getByLabel("Usuario").fill(username);
-    // Corrección anterior del regex aplicada aquí también
     await page.getByLabel(/^Contraseña/).fill(password);
     await page.getByLabel("Confirmar Contraseña").fill(password);
     await page.getByRole("button", { name: "Registrarse" }).click();
@@ -35,8 +34,9 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
     await page.getByRole("radio", { name: "5 Stars" }).click({ force: true });
 
     await page.getByLabel("Comentario").fill(reviewComment);
-    // Pre-llenado, pero confirmamos (usando regex por si acaso, aunque es opcional)
-    await page.getByRole("button", { name: "Enviar Reseña" }).click();
+
+    // Corrección: El botón en ReviewForm dice "Enviar", no "Enviar Reseña"
+    await page.getByRole("button", { name: "Enviar", exact: true }).click();
 
     // Verificar mensaje de éxito
     await expect(page.getByText("Reseña agregada con éxito")).toBeVisible();
@@ -54,9 +54,7 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
     await deleteButton.click();
 
     // Confirmar en el diálogo
-    await expect(
-      page.getByText("¿Estás seguro de que quieres eliminar esta reseña?"),
-    ).toBeVisible();
+    await expect(page.getByText("¿Eliminar esta reseña?")).toBeVisible();
     await page.getByRole("button", { name: "Eliminar" }).click();
 
     // Verificar que desapareció
