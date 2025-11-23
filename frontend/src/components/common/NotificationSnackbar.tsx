@@ -1,6 +1,6 @@
 import React from "react";
 import { Snackbar, Alert } from "@mui/material";
-import { useUIStore } from "../stores/useUIStore";
+import { useUIStore } from "../../stores/useUIStore";
 
 const NotificationSnackbar: React.FC = () => {
   const { snackbar, hideSnackbar } = useUIStore();

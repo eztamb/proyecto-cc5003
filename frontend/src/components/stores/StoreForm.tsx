@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import server from "../services/server";
-import type { NewStore } from "../types/types";
-import { useUIStore } from "../stores/useUIStore";
+import server from "../../services/server";
+import type { NewStore } from "../../types/types";
+import { useUIStore } from "../../stores/useUIStore";
 import {
   Container,
   Box,
@@ -18,7 +18,7 @@ import {
   FormControl,
   type SelectChangeEvent,
 } from "@mui/material";
-import { validateUrl } from "../utils/validation";
+import { validateUrl } from "../../utils/validation";
 
 const categories = [
   "Cafetería",

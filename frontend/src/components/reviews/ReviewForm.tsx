@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import server from "../services/server";
-import type { StoreReview, User, NewReview } from "../types/types";
+import server from "../../services/server";
+import type { StoreReview, User, NewReview } from "../../types/types";
 import { Modal, Box, Typography, Rating, TextField, Button, CircularProgress } from "@mui/material";
-import { useUIStore } from "../stores/useUIStore";
+import { useUIStore } from "../../stores/useUIStore";
 import axios from "axios";
 
 interface ReviewFormProps {
@@ -120,14 +120,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            disabled={isSubmitting}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Nombre (opcional)"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
             disabled={isSubmitting}
           />
           <TextField

@@ -13,9 +13,9 @@ import {
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import server from "../services/server";
-import type { SellerRequest } from "../types/types";
-import { useUIStore } from "../stores/useUIStore";
+import server from "../../services/server";
+import type { SellerRequest } from "../../types/types";
+import { useUIStore } from "../../stores/useUIStore";
 
 const AdminSellerRequests: React.FC = () => {
   const [requests, setRequests] = useState<SellerRequest[]>([]);

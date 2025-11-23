@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Container, TextField, Button, Typography, Box, Paper } from "@mui/material";
-import server from "../services/server";
-import { useUIStore } from "../stores/useUIStore";
+import server from "../../services/server";
+import { useUIStore } from "../../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
-import { formatRut, validateRut, validateEmail } from "../utils/validation";
+import { formatRut, validateRut, validateEmail } from "../../utils/validation";
 
 const SellerApplication: React.FC = () => {
   const [fullName, setFullName] = useState("");

@@ -36,8 +36,6 @@ test.describe("CRUD de Reseñas (Entidad)", () => {
 
     await page.getByLabel("Comentario").fill(reviewComment);
     // Pre-llenado, pero confirmamos (usando regex por si acaso, aunque es opcional)
-    await page.getByLabel(/Nombre/).fill(username);
-
     await page.getByRole("button", { name: "Enviar Reseña" }).click();
 
     // Verificar mensaje de éxito
