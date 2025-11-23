@@ -26,3 +26,6 @@ dist-ssr
 
 .env
 *.http
+
+*/test-results/
+*/playwright-report/
