@@ -7,7 +7,7 @@
       "description": "Máquina expendedora de bebidas energéticas Monster.",
       "location": "Patio de 851, cerca de la entrada",
       "images": [
-        "/images/stores/monster-851.jpg"
+        "https://thumbs.dreamstime.com/b/monstruo-de-la-m%C3%A1quina-expendedora-bebidas-energ%C3%A9ticas-soda-puyallup-washington-estados-unidos-vistas-varias-m%C3%A1quinas-254814370.jpg"
       ],
       "junaeb": false
     },
@@ -18,7 +18,7 @@
       "description": "Venta de snacks, bebidas, pancitos y almuerzos ligeros.",
       "location": "Almirante Blanco Encalada 2111",
       "images": [
-        "/images/stores/buenpan.jpg"
+        "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/12/6b/87/b6/18.jpg?w=900&h=500&s=1"
       ],
       "junaeb": true
     },
@@ -29,7 +29,7 @@
       "description": "Cafetería universitaria con opciones de comida rápida y saludable.",
       "location": "Beauchef 850, piso -1, cerca del patio central",
       "images": [
-        "/images/stores/cafeta.jpg"
+        "https://mascastillayleon.com/wp-content/uploads/2015/08/IMG_2653.jpg"
       ],
       "junaeb": true
     },
@@ -40,7 +40,7 @@
       "description": "Carrito de comida rápida, aceptamos junaeb.",
       "location": "Patio de 850, junto a la entrada principal",
       "images": [
-        "/images/stores/abuelitaYoli.jpg"
+        "https://media.istockphoto.com/id/617880604/es/foto/street-food-en-el-parque.jpg?s=612x612&w=0&k=20&c=AIB5FGgflgoUAU61SrLXRwoobMtUpnuAiKufYqIZO3g="
       ],
       "junaeb": true
     },
@@ -51,7 +51,7 @@
       "description": "Cadena internacional de sándwiches personalizados.",
       "location": "Tupper 2103",
       "images": [
-        "/images/stores/subway.jpg"
+        "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSx6SaKWlf4LV68mca2qlSjV4gnYvcCS2OJYAQA4d7JPNhMUobT-dDAIjfhHA1X1Ggy7JaQeOsRcbU491pnhM_A2VtX_a2-tTSKty195Wv9qnX2c9pp-NksTGK-LNSLx480R8rl3=s680-w680-h510"
       ],
       "junaeb": true
     }
@@ -62,7 +62,7 @@
       "name": "Monster Energy Original",
       "storeId": 1,
       "description": "La bebida energética clásica de lata verde.",
-      "picture": "/images/items/monster-original.jpg",
+      "picture": "https://tost.cl/cdn/shop/products/9_15814de9-6f3f-4152-88fe-9bce1ffbddc8_1200x.png?v=1738744954",
       "price": 2000
     },
     {
@@ -70,7 +70,7 @@
       "name": "Monster Mango Loco",
       "storeId": 1,
       "description": "Sabor tropical a mango.",
-      "picture": "/images/items/monster-mango.jpg",
+      "picture": "https://tost.cl/cdn/shop/products/8_6fe7c7af-ac05-4b21-a7f1-a56bd6227e1f_1200x.png?v=1738743690",
       "price": 2000
     },
     {
@@ -78,7 +78,7 @@
       "name": "Pan Amasado con Queso",
       "storeId": 2,
       "description": "Pan recién horneado con queso derretido.",
-      "picture": "/images/items/pan-amasado-queso.jpg",
+      "picture": "https://media-cdn.tripadvisor.com/media/photo-m/1280/1a/e9/16/ba/pan-amasado-con-carne.jpg",
       "price": 1500
     },
     {
@@ -86,7 +86,7 @@
       "name": "Coca-Cola 500ml",
       "storeId": 2,
       "description": "Bebida de fantasía clásica.",
-      "picture": "/images/items/coca-cola-500.jpg",
+      "picture": "https://cdnx.jumpseller.com/abarrotes-los-3-hermanos/image/62972059/thumb/1079/1079?1745793657",
       "price": 1200
     },
     {
@@ -94,7 +94,7 @@
       "name": "Menú del Día",
       "storeId": 3,
       "description": "Plato de fondo, ensalada, pan y bebida. Cambia a diario.",
-      "picture": "/images/items/menu-del-dia.jpg",
+      "picture": "https://www.infobae.com/resizer/v2/QLT56EP7LFG73GS24SHGNNCVLU.jpg?auth=df5d6c844fe0c229de30ec8bf01055b46c130b12e0d70414884de2eec3f99820&smart=true&width=350&height=262&quality=85",
       "price": 4200
     },
     {
@@ -102,7 +102,7 @@
       "name": "Café Americano",
       "storeId": 3,
       "description": "Café de grano recién preparado.",
-      "picture": "/images/items/cafe-americano.jpg",
+      "picture": "https://www.somoselcafe.com.ar/img/novedades/47.jpg",
       "price": 1800
     },
     {
@@ -110,7 +110,7 @@
       "name": "Sándwich Ave Palta",
       "storeId": 3,
       "description": "Sándwich de pasta de pollo con palta en pan de molde.",
-      "picture": "/images/items/sandwich-ave-palta.jpg",
+      "picture": "https://cocinachilena.cl/wp-content/uploads/2016/05/ave-palta-sandwich.jpg",
       "price": 2800
     },
     {
@@ -118,7 +118,7 @@
       "name": "Completo Italiano",
       "storeId": 4,
       "description": "Vienesa con tomate, palta y mayonesa.",
-      "picture": "/images/items/completo-italiano.jpg",
+      "picture": "https://www.bakelschile.cl/wp-content/uploads/sites/25/2022/08/IMG_7054.jpg",
       "price": 2500
     },
     {
@@ -126,7 +126,7 @@
       "name": "Empanada de Pino",
       "storeId": 4,
       "description": "Empanada de pino de carne, horneada.",
-      "picture": "/images/items/empanada-pino.jpg",
+      "picture": "https://www.tipicochileno.cl/wp-content/uploads/2021/05/empanada-chilena-1200-628.jpg",
       "price": 2200
     },
     {
@@ -134,7 +134,7 @@
       "name": "Sándwich Italiano B.M.T.",
       "storeId": 5,
       "description": "Sándwich con pepperoni, salami y jamón. Tamaño de 15 cm.",
-      "picture": "/images/items/subway-bmt.jpg",
+      "picture": "https://swuat.test.subway.com/images/Menu/CHL/SPA/menu-category-sandwich-italianBMT.jpg",
       "price": 4800
     },
     {
@@ -142,7 +142,7 @@
       "name": "Sándwich de Pollo Teriyaki",
       "storeId": 5,
       "description": "Pollo en salsa teriyaki con vegetales a elección.",
-      "picture": "/images/items/subway-teriyaki.jpg",
+      "picture": "https://swuat.test.subway.com/images/Menu/CHL/SPA/menu-category-sandwich-SWOCT.jpg",
       "price": 4600
     },
     {
@@ -150,7 +150,7 @@
       "name": "Galleta con chips de chocolate",
       "storeId": 5,
       "description": "Galleta horneada estilo americano.",
-      "picture": "/images/items/subway-cookie.jpg",
+      "picture": "https://swuat.test.subway.com/images/Menu/CHL/SPA/menu-category-sides-drinks-extras-cookies.jpg",
       "price": 1100
     }
   ],
@@ -174,7 +174,7 @@
       "storeId": 3,
       "rating": 3,
       "comment": "La comida es buena para el precio, pero la fila a la hora de almuerzo es eterna. Hay que ir con tiempo.",
-      "picture": "/images/reviews/review-fila-cafeta.jpg"
+      "picture": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSey-ARtxE0Y3MK1-Dp640FNIDXkfUrxq2GdA&s"
     },
     {
       "id": "204",
@@ -202,7 +202,7 @@
       "storeId": 4,
       "rating": 4,
       "comment": "Las empanadas son de otro nivel, pero a veces se le acaban muy rápido.",
-      "picture": "/images/reviews/review-empanada.jpg"
+      "picture": "https://storage.googleapis.com/chile-travel-static-content/2021/07/empanada-frita.jpg"
     },
     {
       "id": "43b5",
