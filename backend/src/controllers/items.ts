@@ -1,8 +1,9 @@
 import express from "express";
-import Item from "../models/item";
+import Item, { IItem } from "../models/item";
 import Store from "../models/store";
 import Review from "../models/review";
 import middleware from "../utils/middleware";
+import type { FilterQuery } from "mongoose";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const router = express.Router();
 router.get("/search", async (req, res) => {
   const { q, sort } = req.query;
 
-  const filter: Record<string, unknown> = {};
+  const filter: FilterQuery<IItem> = {};
   if (typeof q === "string" && q.trim() !== "") {
     filter.name = { $regex: q, $options: "i" };
   }
