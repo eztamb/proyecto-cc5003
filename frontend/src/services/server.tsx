@@ -14,7 +14,9 @@ import type {
 } from "../types/types";
 import auth from "./auth";
 
-const baseUrl = "http://localhost:3001/api";
+const baseUrl = import.meta.env.PROD
+  ? "http://fullstack.dcc.uchile.cl:7135/api" 
+  : "http://localhost:3001/api";
 
 const getAuthHeaders = () => {
   const csrfToken = auth.getCsrfToken();
