@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface IItem {
+export interface IItem {
   name: string;
   store: mongoose.Types.ObjectId;
   description: string;

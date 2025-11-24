@@ -85,7 +85,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       }
 
       onReviewAdded(result);
-    } catch (err: unknown) {
+    } catch (err: unknown) { // err is unknown type because. Its safer as it can be anything. Asuming a type may lead to runtime errors.
       if (axios.isAxiosError(err) && err.response?.data?.error) {
         showSnackbar(err.response.data.error, "error");
       } else {

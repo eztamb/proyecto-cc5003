@@ -36,8 +36,9 @@ mongoose
     // }
     console.log("Connected to MongoDB");
   })
-  .catch((error: unknown) => {
-    console.error("Error connecting to MongoDB:", error);
+  .catch((error: unknown) => { // error is unknown type because. Its safer as it can be anything. Asuming a type may lead to runtime errors.
+    const errorMessage = error instanceof Error ? error.message : "unknown error";
+    console.error("error connecting to mongodb:", errorMessage);
   });
 
 // --- middlewares ---
