@@ -24,12 +24,12 @@ Los usuarios no autenticados se consideran **invitados** y solo tienen permisos 
 
 Stores principales:
 
-| Store              | Responsabilidad                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| `useAuthStore.ts`  | Maneja autenticación y sesión (`user`, `isLoading`). Métodos: `checkAuth`, `login`, `signup`, `logout`. |
-| `useStoreStore.ts` | Controla las tiendas y productos, sus filtros, resultados y estado de carga.                            |
-| `useProductStore.ts` | Controla el estado de la búsqueda de productos.
-| `useUIStore.ts`    | Estado global de la interfaz: modales, loaders y notificaciones (Snackbar).                             |
+| Store                | Responsabilidad                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `useAuthStore.ts`    | Maneja autenticación y sesión (`user`, `isLoading`). Métodos: `checkAuth`, `login`, `signup`, `logout`. |
+| `useStoreStore.ts`   | Controla las tiendas y productos, sus filtros, resultados y estado de carga.                            |
+| `useProductStore.ts` | Controla el estado de la búsqueda de productos.                                                         |
+| `useUIStore.ts`      | Estado global de la interfaz: modales, loaders y notificaciones (Snackbar).                             |
 
 ### Flujo general del estado
 
@@ -110,7 +110,7 @@ Más detalles de implementación visual [aquí](./frontend/README.md).
 Aplicación alojada en el servidor de la Facultad:
 
 ```
-https://fullstack.dcc.uchile.cl:7035
+https://fullstack.dcc.uchile.cl:7135
 ```
 
 ---
