@@ -68,4 +68,4 @@ reviewSchema.set("toJSON", {
   },
 });
 
-export default mongoose.model<IReview>("Review", reviewSchema);
+export default mongoose.model<IReview>("Review", reviewSchema, "reviews_beauchefoods");

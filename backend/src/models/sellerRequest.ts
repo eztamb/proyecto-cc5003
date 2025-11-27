@@ -61,4 +61,8 @@ sellerRequestSchema.set("toJSON", {
   },
 });
 
-export default mongoose.model<ISellerRequest>("SellerRequest", sellerRequestSchema);
+export default mongoose.model<ISellerRequest>(
+  "SellerRequest",
+  sellerRequestSchema,
+  "seller_requests_beauchefoods",
+);

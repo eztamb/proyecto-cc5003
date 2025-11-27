@@ -50,4 +50,4 @@ itemSchema.set("toJSON", {
   },
 });
 
-export default mongoose.model<IItem>("Item", itemSchema);
+export default mongoose.model<IItem>("Item", itemSchema, "items_beauchefoods");

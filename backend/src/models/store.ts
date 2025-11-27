@@ -75,4 +75,4 @@ storeSchema.set("toJSON", {
   },
 });
 
-export default mongoose.model<IStore>("Store", storeSchema);
+export default mongoose.model<IStore>("Store", storeSchema, "stores_beauchefoods");
