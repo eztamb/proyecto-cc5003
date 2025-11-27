@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  TextField,
-  Typography,
-  Box,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Alert,
-} from "@mui/material";
+import { TextField, Box, Select, MenuItem, FormControl, InputLabel, Alert } from "@mui/material";
 import ProductCard from "./ProductCard";
 import PageLoader from "../common/PageLoader";
 import { DataGrid } from "../common/DataGrid";
 import { useProductStore } from "../../stores/useProductStore";
 import type { SelectChangeEvent } from "@mui/material";
 import { useDebounce } from "../../hooks/useDebounce";
+import PageHeader from "../common/PageHeader";
 
 const ProductSearch: React.FC = () => {
   const { items, loading, error, hasSearched, filters, searchItems, setQuery, setSort } =
@@ -41,10 +32,8 @@ const ProductSearch: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Busca un Producto
-      </Typography>
+    <Box>
+      <PageHeader title="Busca un Producto" />
 
       <Box sx={{ my: 4, display: "flex", gap: 2 }}>
         <TextField
@@ -78,7 +67,7 @@ const ProductSearch: React.FC = () => {
           emptyMessage="No se encontraron productos."
         />
       ) : null}
-    </Container>
+    </Box>
   );
 };
 

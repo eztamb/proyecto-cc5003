@@ -84,7 +84,7 @@ const StoreList: React.FC = () => {
       ) : (
         <DataGrid
           items={stores}
-          emptyMessage="No se encontraron tiendas con los filtros aplicados."
+          emptyMessage="No se encontraron tiendas."
           renderItem={(store) => <StoreCard store={store} />}
         />
       )}
