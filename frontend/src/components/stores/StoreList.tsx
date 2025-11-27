@@ -15,15 +15,7 @@ import StoreCard from "./StoreCard";
 import PageHeader from "../common/PageHeader";
 import PageLoader from "../common/PageLoader";
 import { DataGrid } from "../common/DataGrid";
-
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
+import { useDebounce } from "../../hooks/useDebounce";
 
 const CATEGORIES = [
   "all",

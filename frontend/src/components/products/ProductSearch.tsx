@@ -1,46 +1,43 @@
-import React, { useState } from "react";
-import server from "../../services/server";
-import type { StoreItem } from "../../types/types";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   TextField,
-  Button,
   Typography,
   Box,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
+  Alert,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import ProductCard from "./ProductCard";
 import PageLoader from "../common/PageLoader";
 import { DataGrid } from "../common/DataGrid";
-import { getErrorMessage } from "../../utils/errorUtils";
+import { useProductStore } from "../../stores/useProductStore";
+import type { SelectChangeEvent } from "@mui/material";
+import { useDebounce } from "../../hooks/useDebounce";
 
 const ProductSearch: React.FC = () => {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("price_asc");
-  const [items, setItems] = useState<StoreItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const { items, loading, error, hasSearched, filters, searchItems, setQuery, setSort } =
+    useProductStore();
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const [localQuery, setLocalQuery] = useState(filters.query);
+  const debouncedQuery = useDebounce(localQuery, 500);
 
-    setLoading(true);
-    setSearched(false);
+  useEffect(() => {
+    setQuery(debouncedQuery);
+  }, [debouncedQuery, setQuery]);
 
-    try {
-      const results = await server.searchItems(query, sort);
-      setItems(results);
-      setSearched(true);
-    } catch (error) {
-      console.error(getErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    searchItems();
+  }, [filters.query, filters.sort, searchItems]);
+
+  useEffect(() => {
+    setLocalQuery(filters.query);
+  }, [filters.query]);
+
+  const handleSortChange = (e: SelectChangeEvent<string>) => {
+    setSort(e.target.value);
   };
 
   return (
@@ -49,35 +46,32 @@ const ProductSearch: React.FC = () => {
         Busca un Producto
       </Typography>
 
-      <Box component="form" onSubmit={handleSearch} sx={{ my: 4, display: "flex", gap: 2 }}>
+      <Box sx={{ my: 4, display: "flex", gap: 2 }}>
         <TextField
           fullWidth
           label="Nombre del producto (ej: Monster, Empanada)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={localQuery}
+          onChange={(e) => setLocalQuery(e.target.value)}
           sx={{ flexGrow: 1, minWidth: 250 }}
         />
         <FormControl sx={{ minWidth: 250 }}>
           <InputLabel>Ordenar por</InputLabel>
-          <Select value={sort} label="Ordenar por" onChange={(e) => setSort(e.target.value)}>
+          <Select value={filters.sort} label="Ordenar por" onChange={handleSortChange}>
             <MenuItem value="price_asc">Precio: Menor a Mayor</MenuItem>
             <MenuItem value="price_desc">Precio: Mayor a Menor</MenuItem>
           </Select>
         </FormControl>
-        <Button
-          sx={{ minWidth: 120 }}
-          type="submit"
-          variant="contained"
-          startIcon={<SearchIcon />}
-          size="large"
-        >
-          Buscar
-        </Button>
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {loading ? (
         <PageLoader />
-      ) : searched ? (
+      ) : hasSearched || items.length > 0 ? (
         <DataGrid
           items={items}
           renderItem={(item) => <ProductCard item={item} showStoreInfo={true} />}
