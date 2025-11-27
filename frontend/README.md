@@ -23,7 +23,7 @@ npm run dev
 
 Abre en el navegador: [http://localhost:5173](http://localhost:5173)
 
-También se puede iniciar junto con el backend mediante `../start.sh`.
+También se puede iniciar junto con el backend mediante el script raíz `../start.sh`.
 
 ---
 
@@ -34,10 +34,10 @@ Ubicación: `src/stores/`
 | Store              | Estado                         |
 | ------------------ | ------------------------------ |
 | `useAuthStore.ts`  | Usuario, sesión, autenticación |
-| `useStoreStore.ts` | Tiendas, productos, filtros    |
-| `useUIStore.ts`    | Estados de interfaz y loaders  |
+| `useStoreStore.ts` | Tiendas, filtros y búsqueda    |
+| `useUIStore.ts`    | Estados de interfaz (Snackbar) |
 
-El estado se comparte a través de hooks React y los errores o loaders se propagan mediante un `Snackbar` global.
+El estado se comparte a través de hooks React y los errores se propagan centralizadamente.
 
 ---
 
@@ -50,21 +50,21 @@ Configuradas en `src/App.tsx`:
 | `/`                             | Público          | Lista de tiendas        |
 | `/store/:storeId`               | Público          | Detalle de tienda       |
 | `/login`, `/signup`             | Público          | Autenticación           |
+| `/product-search`               | Público          | Buscador de productos   |
 | `/become-seller`                | Usuario reviewer | Solicitud de rol Seller |
 | `/new-store`, `/edit-store/:id` | Seller/Admin     | Gestión de tiendas      |
+| `/my-stores`                    | Seller/Admin     | Mis tiendas             |
 | `/admin/requests`, `/users`     | Admin            | Administración          |
-
-Flujo de autenticación y validación de roles manejado mediante `ProtectedRoute` y `useAuthStore`.
 
 ---
 
-## 🎨 Librerías de UI y estilos
+## 🎨 Librerías y Tecnologías
 
-- **Material UI (MUI)** — Componentes principales y theming.
-- **Emotion** — Soporte de CSS-in-JS en MUI.
-- **TailwindCSS** — Utilidades rápidas (layout, spacing, colors).
-
-Temática: modo **oscuro** y esquema de color personalizado (definido en `App.tsx`).
+- **React Router Dom:** Manejo de navegación SPA.
+- **Axios:** Cliente HTTP para comunicación con la API.
+- **Material UI (MUI):** Componentes visuales base.
+- **TailwindCSS:** Estilizado utilitario.
+- **Zustand:** Gestión de estado ligero.
 
 ---
 
