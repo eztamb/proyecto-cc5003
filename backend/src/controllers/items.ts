@@ -7,13 +7,50 @@ import type { FilterQuery } from "mongoose";
 
 const router = express.Router();
 
+// helper para escapar caracteres especiales de Regex
+const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// helper para crear patrón insensible a acentos
+const createAccentRegex = (text: string) => {
+  const escaped = escapeRegExp(text);
+  return escaped
+    .split("")
+    .map((char) => {
+      const lower = char.toLowerCase();
+      switch (lower) {
+        case "a":
+        case "á":
+          return "[aá]";
+        case "e":
+        case "é":
+          return "[eé]";
+        case "i":
+        case "í":
+          return "[ií]";
+        case "o":
+        case "ó":
+          return "[oó]";
+        case "u":
+        case "ú":
+          return "[uú]";
+        default:
+          return char;
+      }
+    })
+    .join("");
+};
+
 // get /api/items/search - buscar items con filtros y rating de tienda
 router.get("/search", async (req, res) => {
   const { q, sort } = req.query;
 
   const filter: FilterQuery<IItem> = {};
   if (typeof q === "string" && q.trim() !== "") {
-    filter.name = { $regex: q, $options: "i" };
+    // usamos el helper para generar el regex
+    const regexPattern = createAccentRegex(q.trim());
+    filter.name = { $regex: regexPattern, $options: "i" };
   }
 
   let sortOption: Record<string, 1 | -1> = {};
