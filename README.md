@@ -28,6 +28,7 @@ Stores principales:
 | ------------------ | ------------------------------------------------------------------------------------------------------- |
 | `useAuthStore.ts`  | Maneja autenticación y sesión (`user`, `isLoading`). Métodos: `checkAuth`, `login`, `signup`, `logout`. |
 | `useStoreStore.ts` | Controla las tiendas y productos, sus filtros, resultados y estado de carga.                            |
+| `useProductStore.ts` | Controla el estado de la búsqueda de productos.
 | `useUIStore.ts`    | Estado global de la interfaz: modales, loaders y notificaciones (Snackbar).                             |
 
 ### Flujo general del estado

@@ -31,11 +31,12 @@ También se puede iniciar junto con el backend mediante el script raíz `../star
 
 Ubicación: `src/stores/`
 
-| Store              | Estado                         |
-| ------------------ | ------------------------------ |
-| `useAuthStore.ts`  | Usuario, sesión, autenticación |
-| `useStoreStore.ts` | Tiendas, filtros y búsqueda    |
-| `useUIStore.ts`    | Estados de interfaz (Snackbar) |
+| Store                | Estado                         |
+| -------------------- | ------------------------------ |
+| `useAuthStore.ts`    | Usuario, sesión, autenticación |
+| `useStoreStore.ts`   | Tiendas, filtros y búsqueda    |
+| `useProductStore.ts` | Búsqueda de Productos          |
+| `useUIStore.ts`      | Estados de interfaz (Snackbar) |
 
 El estado se comparte a través de hooks React y los errores se propagan centralizadamente.
 
