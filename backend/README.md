@@ -20,6 +20,7 @@ Archivo `.env` (en `backend/.env`):
 MONGODB_URI=mongodb://localhost:27017/<tu-db-name>
 TEST_MONGODB_URI=mongodb://localhost:27017/<tu-test-db-name>
 JWT_SECRET=tu_clave_super_secreta_y_larga
+PORT=<puerto-para-despliegue>
 ```
 
 Ejemplo inicial: `backend/.env.example`.

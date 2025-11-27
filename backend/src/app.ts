@@ -2,6 +2,7 @@ import "express-async-errors";
 import cookieParser from "cookie-parser";
 
 import express from "express";
+import path from "path";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -34,7 +35,8 @@ mongoose
       console.log(`connected to mongodb (${isTestEnv ? "TEST" : "DEV"} environment)`);
     }
   })
-  .catch((error: unknown) => { // error is unknown type because. Its safer as it can be anything. Asuming a type may lead to runtime errors.
+  .catch((error: unknown) => {
+    // error is unknown type because. Its safer as it can be anything. Asuming a type may lead to runtime errors.
     const errorMessage = error instanceof Error ? error.message : "unknown error";
     console.error("error connecting to mongodb:", errorMessage);
   });
@@ -51,26 +53,37 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// --- rutas ---
+// --- Rutas API ---
 app.use("/api/stores", storesRouter);
 app.use("/api/items", itemsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 
-// --- middlewares de manejo de errores (después de las rutas) ---
+// --- SERVIR FRONTEND ---
+// Servir archivos estáticos desde la carpeta 'dist'x
+const distPath = path.join(__dirname, "../public");
+app.use(express.static(distPath));
+
+// Para cualquier otra ruta que no sea API, devolver el index.html (para React Router)
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
+
+// --- middlewares de manejo de errores ---
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 
-// --- configuración del servidor ---
-const PORT = 3001;
+// --- Configuración del puerto ---
+// Usar variable de entorno PORT o 7135 por defecto
+const PORT = process.env.PORT || 7135;
 
 // Exportamos el servidor para poder iniciarlo desde otros scripts si fuera necesario,
 // o prevenir que se inicie dos veces en tests de integración unitarios.
 // Para este caso simple, mantenemos el listen aquí, pero condicionado si se requiriera.
 if (process.env.NODE_ENV !== "test_unit") {
   app.listen(PORT, () => {
-    if (!isTestEnv) console.log(`server running on port ${PORT}`);
+    console.log(`server running on port ${PORT}`);
   });
 }
 
