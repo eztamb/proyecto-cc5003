@@ -14,10 +14,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ item, showStoreInfo = false }
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <ImageWithFallback
         type="item"
-        height="200"
         src={item.picture}
         alt={item.name}
-        sx={{ objectFit: "cover", width: "100%" }}
+        sx={{ objectFit: "cover", width: "100%", height: "220px" }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="h6" component="div">

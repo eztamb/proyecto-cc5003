@@ -29,9 +29,12 @@ const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
           }}
         />
         <CardContent sx={{ flexGrow: 1, width: "100%" }}>
-          <Typography gutterBottom variant="h5" component="div">
-            {store.name}
-          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <Typography gutterBottom variant="h5" component="div">
+              {store.name}
+            </Typography>
+          </Box>
+
           <Typography
             variant="body2"
             color="text.secondary"
@@ -55,7 +58,20 @@ const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
           <Box
             sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}
           >
-            <Chip label={store.storeCategory} size="small" variant="outlined" />
+            {/* Contenedor para Categoría y Junaeb */}
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Chip label={store.storeCategory} size="small" variant="outlined" />
+              {store.junaeb && (
+                <Chip
+                  label="Junaeb"
+                  size="small"
+                  color="success"
+                  variant="filled"
+                  sx={{ fontWeight: "bold", color: "white" }}
+                />
+              )}
+            </Box>
+
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Rating value={store.averageRating || 0} precision={0.1} readOnly size="small" />
               <Typography variant="caption" sx={{ ml: 0.5 }}>

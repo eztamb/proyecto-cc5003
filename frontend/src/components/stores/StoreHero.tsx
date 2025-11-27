@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Container, Typography, Button, Rating } from "@mui/material";
+import { Box, Container, Typography, Button, Rating, Chip } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { StoreWithDetails } from "../../types/types";
 
@@ -50,14 +50,26 @@ const StoreHero: React.FC<StoreHeroProps> = ({ store }) => {
         >
           Volver
         </Button>
-        <Typography
-          variant="h2"
-          component="h1"
-          fontWeight="bold"
-          sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
-        >
-          {store.name}
-        </Typography>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+          <Typography
+            variant="h2"
+            component="h1"
+            fontWeight="bold"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
+          >
+            {store.name}
+          </Typography>
+
+          {store.junaeb && (
+            <Chip
+              label="Acepta Junaeb"
+              color="success"
+              sx={{ color: "white", fontWeight: "bold", boxShadow: 2 }}
+            />
+          )}
+        </Box>
+
         <Typography variant="h6" sx={{ mb: 1, textShadow: "1px 1px 2px rgba(0,0,0,0.5)" }}>
           {store.description}
         </Typography>
