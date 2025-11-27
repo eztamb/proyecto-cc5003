@@ -49,8 +49,6 @@ test.describe("Funcionalidad de Listado de Tiendas", () => {
 
     await page.waitForTimeout(600);
 
-    await expect(
-      page.getByText("No se encontraron tiendas con los filtros aplicados"),
-    ).toBeVisible();
+    await expect(page.getByText("No se encontraron tiendas.")).toBeVisible();
   });
 });

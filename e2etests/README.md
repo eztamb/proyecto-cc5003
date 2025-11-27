@@ -12,13 +12,15 @@ Este módulo contiene las pruebas End-to-End (E2E) implementadas con **[Playwrig
    - Frontend: `http://localhost:5173`
    - Backend: `http://localhost:3001`
 
-Para facilitar esto, se incluye el script:
+Para facilitar lo último, se incluye el script:
 
 ```bash
 ./start-test.sh
 ```
 
 Este script levanta ambos servicios en modo test y ejecuta un [script semilla](`../backend/src/scripts/seed.ts`) que rellena la base de datos con datos de prueba.
+
+**Importante:** Debes esperar algunos segundos para que el backend y el frontend estén listos antes de probar con Playwright. De lo contrario, es posible que encuentres errores durante la ejecución.
 
 ---
 
