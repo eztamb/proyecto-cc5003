@@ -2,6 +2,7 @@ import express from "express";
 import Store from "../models/store";
 import middleware from "../utils/middleware";
 import { validateUrl } from "../utils/validation";
+import { createAccentRegex } from "../utils/search";
 
 const router = express.Router();
 
@@ -21,9 +22,10 @@ router.get("/", async (req, res) => {
   }
 
   if (search && typeof search === "string") {
+    const regexPattern = createAccentRegex(search);
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
+      { name: { $regex: regexPattern, $options: "i" } },
+      { description: { $regex: regexPattern, $options: "i" } },
     ];
   }
 

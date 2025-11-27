@@ -4,43 +4,9 @@ import Store from "../models/store";
 import Review from "../models/review";
 import middleware from "../utils/middleware";
 import type { FilterQuery } from "mongoose";
+import { createAccentRegex } from "../utils/search";
 
 const router = express.Router();
-
-// helper para escapar caracteres especiales de Regex
-const escapeRegExp = (string: string) => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
-
-// helper para crear patrón insensible a acentos
-const createAccentRegex = (text: string) => {
-  const escaped = escapeRegExp(text);
-  return escaped
-    .split("")
-    .map((char) => {
-      const lower = char.toLowerCase();
-      switch (lower) {
-        case "a":
-        case "á":
-          return "[aá]";
-        case "e":
-        case "é":
-          return "[eé]";
-        case "i":
-        case "í":
-          return "[ií]";
-        case "o":
-        case "ó":
-          return "[oó]";
-        case "u":
-        case "ú":
-          return "[uú]";
-        default:
-          return char;
-      }
-    })
-    .join("");
-};
 
 // get /api/items/search - buscar items con filtros y rating de tienda
 router.get("/search", async (req, res) => {
