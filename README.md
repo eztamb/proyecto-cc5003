@@ -1,157 +1,121 @@
 # 🌯🍝🍟 BeaucheFoods 🥗🍔🍕
 
-Proyecto para el curso de Aplicaciones Web Reactivas (CC5003), semestre Primavera 2025.
-
-## Descripción
-
-BeaucheFoods es una aplicación web SPA (Single Page Application) desarrollada con React (Vite + TypeScript) y un backend en Node.js (Express + TypeScript + Mongoose). Su objetivo es ayudar a los estudiantes de Bauchef a encontrar, explorar y reseñar diferentes opciones de comida dentro o cerca de la facultad. Incluye autenticación de usuarios y roles (administrador, reviewer, seller).
-
-## Requisitos previos
-
-- Node.js (versión 18 o superior) instalado en tu sistema.
-- npm (viene incluido con Node.js).
-- MongoDB (instalado localmente o una instancia en la nube como MongoDB Atlas).
-
-## Variables de Entorno
-
-El backend requiere un archivo `.env` en la carpeta `backend` con las siguientes variables:
-
-```dotenv
-# backend/.env
-MONGODB_URI=mongodb://localhost:27017/<tu-db-name> # Reemplaza con tu connection string de MongoDB
-JWT_SECRET=tu_clave_super_secreta_y_larga_generada_aqui # Genera una clave secreta segura y larga
-```
-
-Puedes copiar el archivo `backend/.env.example` como punto de partida. Asegúrate de reemplazar `<tu-db-name>` y generar una `JWT_SECRET` segura.
-
-## Instalación y ejecución local
-
-El proyecto está dividido en dos carpetas principales: `backend` y `frontend`.
-
-### Opción 1: Usar el script de inicio (recomendado)
-
-1.  **Configura el archivo `.env` en la carpeta `backend`** (ver sección "Variables de Entorno").
-2.  **Abre una terminal en la raíz del proyecto.**
-3.  **Dale permisos de ejecución al script:**
-    ```bash
-    chmod +x start.sh
-    ```
-4.  **Ejecuta el script:**
-    ```bash
-    ./start.sh
-    ```
-
-Esto hará lo siguiente automáticamente:
-
-- Instalará las dependencias en `backend` y `frontend` (si no existen `node_modules`).
-- Compilará el backend de TypeScript a JavaScript (necesario para `npm run start` o `npm run dev` según esté configurado el script).
-- Iniciará el servidor backend (Express) en `http://localhost:3001` (o el puerto configurado).
-- Esperará unos segundos para que el backend esté listo.
-- Iniciará el frontend (Vite) en `http://localhost:5173` (puerto por defecto de Vite).
-
-Abre tu navegador en `http://localhost:5173` para ver la aplicación. El backend se detendrá automáticamente cuando cierres el frontend (Ctrl+C).
-
-### Opción 2: Ejecución manual (paso a paso)
-
-1.  **Configura el archivo `.env` en la carpeta `backend`.**
-2.  **Instalar dependencias y compilar/iniciar backend (en una terminal):**
-    ```bash
-    cd backend
-    npm install
-    npm run build # Compila TypeScript a JavaScript (necesario la primera vez)
-    npm run dev   # Inicia el backend en modo desarrollo (con ts-node-dev)
-    # O usa 'npm start' para ejecutar el código compilado
-    ```
-    El backend estará corriendo en `http://localhost:3001`. Déjalo corriendo.
-3.  **Instalar dependencias e iniciar frontend (en otra terminal):**
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
-    Abre `http://localhost:5173` en tu navegador.
-
-Para detener todo, usa Ctrl+C en cada terminal.
+Proyecto para el curso **CC5003 — Aplicaciones Web Reactivas (Primavera 2025)**  
+Universidad de Chile — Departamento de Ciencias de la Computación.
 
 ---
 
-## Informe de entrega
+## 💬 Tema general del proyecto
 
-A continuación se entrega lo pedido en el informe del Hito 3.
+**BeaucheFoods** es una aplicación web **SPA (Single Page Application)** desarrollada con **React (Vite + TypeScript)** y un backend en **Node.js (Express + TypeScript + Mongoose)**.  
+El objetivo del proyecto es permitir a los estudiantes de Beauchef explorar tiendas y productos de comida, dejar reseñas, y gestionar locales según el rol del usuario (administrador, reviewer o seller).
 
-### Tema general del proyecto
+- Los **usuarios reviewers** pueden explorar y reseñar productos y tiendas. Pueden optar a ser vendedores mediante un formulario de solicitud.
+- Los **vendedores** (sellers) pueden crear y administrar sus tiendas.
+- Los **administradores** pueden gestionar usuarios, aprobar solicitudes de vendedores y moderar contenido.
 
-BeaucheFoods es una aplicación web SPA desarrollada con React (Vite + TypeScript) y un backend en Node.js (Express + TypeScript + Mongoose). La idea de la aplicación es permitirle a los estudiantes de Beauchef el poder buscar tiendas y productos, dejar reseñas, y gestionar sus tiendas (deoendiendo del rol). Permite buscar tanto productos como tiendas específicas para ver reseñas y comparar precios.
+Los usuarios no autenticados se consideran **invitados** y solo tienen permisos de lectura sobre las tiendas y sus respectivos productos y reseñas.
 
-### Estructura del estado global
+---
 
-- Librería de estado: Zustand (ver `frontend/package.json`, dependencia `zustand`).
-- Stores principales (carpeta `frontend/src/stores`):
-  - `useAuthStore.ts`: mantiene `user` y `isLoading`, métodos `checkAuth`, `login`, `signup`, `logout`. `checkAuth` consulta el backend al iniciar la app para restablecer la sesión.
-  - `useStoreStore.ts`: store para tiendas y productos — mantiene estados de tiendas, filtros y carga; ver código en `frontend/src/stores`.
-  - `useUIStore.ts`: estado UI global: loaders, estado modal, etc.
+## 🧠 Estructura del estado global
 
-Entradas, salidas y errores
-- Entrada: acciones UI (login, logout, fetch stores, apply seller, crear tienda, etc.).
-- Salida: datos serializables (objetos `User`, `Store`, `Review`) y flags de loading/error.
-- Errores: surfaceados al UI mediante `NotificationSnackbar` o estados en las stores.
+- **Librería de estado global:** [Zustand](https://github.com/pmndrs/zustand)
+- **Ubicación:** `frontend/src/stores`
 
-### Mapa de rutas y flujo de autenticación
+Stores principales:
 
-Rutas principales (definidas en `frontend/src/App.tsx`):
+| Store              | Responsabilidad                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| `useAuthStore.ts`  | Maneja autenticación y sesión (`user`, `isLoading`). Métodos: `checkAuth`, `login`, `signup`, `logout`. |
+| `useStoreStore.ts` | Controla las tiendas y productos, sus filtros, resultados y estado de carga.                            |
+| `useUIStore.ts`    | Estado global de la interfaz: modales, loaders y notificaciones.                                        |
 
-- `/` — Lista de tiendas (pública).
-- `/store/:storeId` — Detalle de tienda (pública).
-- `/product-search` — Búsqueda de productos (pública).
-- `/login` — Página de login.
-- `/signup` — Página de registro.
+### Flujo general del estado
 
-Rutas protegidas (requieren autenticación y algunos solo son accesibles para roles específicos):
+1. Al iniciar la aplicación, `useAuthStore.checkAuth()` verifica una sesión existente con el backend.
+2. El `user.role` (admin, reviewer, seller) determina qué rutas son accesibles.
+3. Los errores se muestran mediante un componente global `NotificationSnackbar`.
 
-- `/users` — Gestión de usuarios (solo `admin`).
-- `/admin/requests` — Peticiones de seller (solo `admin`).
-- `/new-store`, `/edit-store/:storeId`, `/my-stores` — Crear/editar/mis tiendas (roles de `seller` o `admin`).
-- `/become-seller` — Aplicación para seller (rol `reviewer` en la aplicación actual como requerimiento).
+Para ver más detalles de implementación, consulta la [documentación del frontend](./frontend/README.md).
 
-Flujo de autenticación:
-- Al cargar la app, `useAuthStore.checkAuth()` se ejecuta para consultar al backend si existe sesión. Mientras tanto `isLoading` muestra un loader global.
-- Si el usuario no está autenticado y accede a una ruta protegida que redirige a `/login`.
-- `useAuthStore` mantiene el `user` con la propiedad `role` usada por `ProtectedRoute` para validar accesos por rol.
+---
 
-### Descripción de los tests E2E
+## 🗺️ Mapa de rutas y flujo de autenticación
 
-- Herramienta: Playwright (ubicado en `e2etests/`. `e2etests/package.json` y `playwright.config.ts`).
-- Scripts disponibles:
-  - `cd e2etests && npm install` para instalar dependencias.
-  - `npm run test` (ejecuta `playwright test`).
+### Rutas principales (públicas)
 
-- Flujos cubiertos (archivos en `e2etests/tests`):
-  - `auth.spec.ts`: login, signup y flujo básico de sesión.
-  - `items.spec.ts`: interacciones con productos.
-  - `reviews.spec.ts`: crear y visualizar reseñas.
-  - `admin-store.spec.ts`: tareas administrativas sobre stores.
-  - `seller-flow.spec.ts`: flujo de solicitud/operación como seller.
-  - `stores-filter.spec.ts`: filtrado y paginación de stores.
-  - `security.spec.ts`: validaciones de permisos para rutas protegidas.
+- `/` — Lista de tiendas
+- `/store/:storeId` — Detalle de tienda
+- `/product-search` — Búsqueda de productos
+- `/login` — Inicio de sesión
+- `/signup` — Registro de usuario
 
-Notas de ejecución: los tests E2E asumen que backend y frontend están corriendo y que la base de datos está en el estado esperado.
+### Rutas protegidas
 
-### Librería de estilos utilizada y decisiones de diseño
+| Ruta                                               | Rol requerido      |
+| -------------------------------------------------- | ------------------ |
+| `/users`                                           | `admin`            |
+| `/admin/requests`                                  | `admin`            |
+| `/new-store`, `/edit-store/:storeId`, `/my-stores` | `seller` o `admin` |
+| `/become-seller`                                   | `reviewer`         |
 
-- Librerías usadas:
-  - Material UI v5 (`@mui/material`, `@mui/icons-material`) para componentes accesibles y consistentes.
-  - Emotion (`@emotion/react`, `@emotion/styled`) para estilos CSS-in-JS y customización de MUI.
-  - Tailwind CSS para utilidades y retoques rápidos de layout (`tailwindcss` y `@tailwindcss/vite`).
+### Flujo de autenticación
 
-Decisiones de diseño:
-- MUI se usó como base de componentes (botones, inputs, modal, layout) por su rapidez de desarrollo y accesibilidad.
-- Tailwind se utilizó para utilidades puntuales (spacing, responsividad) sin reemplazar el sistema de temas centralizado de MUI.
-- Se usó un tema MUI oscuro (en `App.tsx`) para colores primarios/secondary y tipografía permitiendo mantener una apariencia coherente y responsiva.
+1. `useAuthStore.checkAuth()` valida la sesión contra el backend al cargar la app.
+2. Si el usuario no está autenticado y solicita una ruta protegida → redirección a `/login`.
+3. La propiedad `user.role` se usa en componentes `ProtectedRoute` para filtrar acceso según el tipo de usuario.
 
-### URL de la aplicación desplegada
+---
 
-La URL de despliegue es:
+## 🧪 Descripción de los tests E2E
 
-```
-https://fullstack.dcc.uchile.cl:7135
-```
+Las pruebas End-to-End están implementadas con **[Playwright](https://playwright.dev/)** en el directorio [`/e2etests`](./e2etests/).
+
+### Flujos cubiertos
+
+- **Autenticación:** login, signup, persistencia de sesión.
+- **Productos y tiendas:** búsqueda, creación, reseñas.
+- **Flujo de seller:** solicitud de rol, creación y edición de tiendas.
+- **Permisos:** validación de acceso a rutas restringidas.
+- **Administrador:** gestión de peticiones y control del sistema.
+
+Se genera automáticamente un informe HTML de los tests que se puede ver con `npx playwright show-report`.
+
+Detalles de configuración y ejecución [aquí](./e2etests/README.md).
+
+---
+
+## 🎨 Librería de estilos y decisiones de diseño
+
+- Librerías utilizadas:
+  - **Material UI v5** (`@mui/material`, `@mui/icons-material`)
+  - **Emotion** (`@emotion/react`, `@emotion/styled`)
+  - **Tailwind CSS** (a través de `@tailwindcss/vite`)
+
+**Decisiones de diseño:**
+
+- **MUI** se usa como base de componentes accesibles y responsivos.
+- **Tailwind** se aplica para ajustes rápidos de layout y espaciado.
+- Se mantiene un **tema oscuro unificado**, configurado en `App.tsx`, para coherencia visual.
+- La tipografía y escala de color provienen del tema MUI centralizado.
+
+Más detalles de implementación visual [aquí](./frontend/README.md).
+
+---
+
+## 🌐 URL de la aplicación desplegada
+
+Aplicación alojada en el servidor de la Facultad:
+
+https://fullstack.dcc.uchile.cl:7035
+
+---
+
+## 📁 Documentación adicional
+
+- [`frontend/README.md`](./frontend/README.md): detalles de la configuración del frontend, Vite, React, ESLint y estado global.
+- [`backend/README.md`](./backend/README.md): requisitos, variables de entorno, comandos y estructura del servidor Express.
+- [`e2etests/README.md`](./e2etests/README.md): guía para correr y analizar las pruebas E2E.
+
+---

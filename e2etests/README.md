@@ -1,45 +1,76 @@
-# Pruebas E2E para BeaucheFoods
+# 🧪 BeaucheFoods — Pruebas E2E
 
-Este directorio contiene las pruebas End-to-End (E2E) automatizadas utilizando [Playwright](https://playwright.dev/). Estas pruebas verifican flujos críticos de la aplicación simulando un usuario real en el navegador.
+Este módulo contiene las pruebas End-to-End (E2E) implementadas con **[Playwright](https://playwright.dev/)**.
 
-## Requisitos Previos
+---
 
-1.  Tener **Node.js** instalado.
-2.  Configurar las variables de entorno en el backend. Revisa la guía [aquí](../backend/README.md).
-3.  La aplicación **BeaucheFoods** (Backend y Frontend) debe estar ejecutándose localmente.
-    - Frontend: `http://localhost:5173`
-    - Backend: `http://localhost:3001`
-    - Puedes usar el script `start-test.sh` en la raíz del proyecto para levantar ambos. Esto correrá la aplicación en modo test y usará un [script semilla](../backend/src/scripts/seed.ts) para poblar la base de datos de prueba.
+## 🧩 Requisitos
 
-## Instalación
+1. Tener **Node.js** instalado.
+2. Configurar el backend con su `.env`.
+3. Tener backend y frontend ejecutándose:
+   - Frontend: `http://localhost:5173`
+   - Backend: `http://localhost:3001`
 
-Desde la raíz del proyecto, navega a esta carpeta e instala las dependencias:
+Para facilitar esto, se incluye el script:
+
+```bash
+./start-test.sh
+```
+
+Este script levanta ambos servicios en modo test y ejecuta un [script semilla](`../backend/src/scripts/seed.ts`) que rellena la base de datos con datos de prueba.
+
+---
+
+## ⚙️ Instalación
 
 ```bash
 cd e2etests
 npm install
 ```
 
-## Ejecución
+---
 
-Solo tienes que ejecutar el siguiente comando para correr los tests:
+## 🚀 Ejecución de los tests
 
 ```bash
 npx playwright test
 ```
 
-## Resultados
-
-Para ver los resultados de los tests con más detalle, puedes ver el reporte HTML generado automáticamente por Playwright. Debes ejecutar:
+Para abrir el reporte HTML:
 
 ```bash
 npx playwright show-report
 ```
 
-Deberías ver en la consola un mensaje como este:
+---
 
-```
-Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.
-```
+## 🧭 Flujos cubiertos
 
-Si visitas la URL, podrás ver todos los detalles de la última ejecución de los tests E2E.
+| Archivo de test         | Escenario principal                   |
+| ----------------------- | ------------------------------------- |
+| `auth.spec.ts`          | Login, signup, persistencia de sesión |
+| `items.spec.ts`         | Navegación por productos y tiendas    |
+| `reviews.spec.ts`       | Creación y visualización de reseñas   |
+| `seller-flow.spec.ts`   | Solicitud y operación como seller     |
+| `admin-store.spec.ts`   | Funcionalidades exclusivas del admin  |
+| `stores-filter.spec.ts` | Filtros y paginación                  |
+| `security.spec.ts`      | Accesos no autorizados                |
+
+---
+
+## 🧠 Arquitectura y dependencias
+
+- **Playwright Test Runner** para ejecución paralela.
+- Configuración principal: `playwright.config.ts`
+- Scripts de npm para instalación y ejecución rápida.
+
+---
+
+## 📎 Referencias
+
+- Documentación del backend: [`../backend/README.md`](../backend/README.md)
+- Frontend y rutas: [`../frontend/README.md`](../frontend/README.md)
+- Informe general: [`../README.md`](../README.md)
+
+---

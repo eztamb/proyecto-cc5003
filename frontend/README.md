@@ -1,69 +1,90 @@
-# React + TypeScript + Vite
+# 🥗 BeaucheFoods — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz de usuario desarrollada con **React + Vite + TypeScript**, utilizando **Zustand** para el estado global y **Material UI + TailwindCSS** para el diseño.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ⚙️ Requisitos Previos
 
-## Expanding the ESLint configuration
+- Node.js v18+
+- npm
+- Backend en ejecución en `http://localhost:3001`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Ejecución local
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Opción rápida:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Abre en el navegador: [http://localhost:5173](http://localhost:5173)
+
+También se puede iniciar junto con el backend mediante `../start.sh`.
+
+---
+
+## 🧠 Estado Global — Zustand
+
+Ubicación: `src/stores/`
+
+| Store              | Estado                         |
+| ------------------ | ------------------------------ |
+| `useAuthStore.ts`  | Usuario, sesión, autenticación |
+| `useStoreStore.ts` | Tiendas, productos, filtros    |
+| `useUIStore.ts`    | Estados de interfaz y loaders  |
+
+El estado se comparte a través de hooks React y los errores o loaders se propagan mediante un `Snackbar` global.
+
+---
+
+## 🗺️ Rutas principales
+
+Configuradas en `src/App.tsx`:
+
+| Ruta                            | Acceso           | Descripción             |
+| ------------------------------- | ---------------- | ----------------------- |
+| `/`                             | Público          | Lista de tiendas        |
+| `/store/:storeId`               | Público          | Detalle de tienda       |
+| `/login`, `/signup`             | Público          | Autenticación           |
+| `/become-seller`                | Usuario reviewer | Solicitud de rol Seller |
+| `/new-store`, `/edit-store/:id` | Seller/Admin     | Gestión de tiendas      |
+| `/admin/requests`, `/users`     | Admin            | Administración          |
+
+Flujo de autenticación y validación de roles manejado mediante `ProtectedRoute` y `useAuthStore`.
+
+---
+
+## 🎨 Librerías de UI y estilos
+
+- **Material UI (MUI)** — Componentes principales y theming.
+- **Emotion** — Soporte de CSS-in-JS en MUI.
+- **TailwindCSS** — Utilidades rápidas (layout, spacing, colors).
+
+Temática: modo **oscuro** y esquema de color personalizado (definido en `App.tsx`).
+
+---
+
+## ✅ Linter y configuración TS
+
+Se usa ESLint configurado para TypeScript y React. Ajustado para projects con:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+parserOptions: {
+  project: ['./tsconfig.node.json', './tsconfig.app.json'],
+}
 ```
+
+y las configuraciones extendidas de `tseslint.configs.recommendedTypeChecked`.
+
+---
+
+## 📎 Referencias adicionales
+
+- Backend y API: [`../backend/README.md`](../backend/README.md)
+- Pruebas E2E: [`../e2etests/README.md`](../e2etests/README.md)
+
+---
