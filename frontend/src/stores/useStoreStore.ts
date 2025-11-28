@@ -15,7 +15,7 @@ interface ShopState {
   setCategory: (category: string) => void;
 }
 
-export const useShopStore = create<ShopState>((set, get) => ({
+export const useStoreStore = create<ShopState>((set, get) => ({
   stores: [],
   loading: false,
   error: null,

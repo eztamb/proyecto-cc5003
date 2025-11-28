@@ -10,7 +10,7 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { useShopStore } from "../../stores/useStoreStore";
+import { useStoreStore } from "../../stores/useStoreStore";
 import StoreCard from "./StoreCard";
 import PageHeader from "../common/PageHeader";
 import PageLoader from "../common/PageLoader";
@@ -29,7 +29,7 @@ const CATEGORIES = [
 
 const StoreList: React.FC = () => {
   const { user } = useAuthStore();
-  const { stores, loading, error, filters, fetchStores, setSearch, setCategory } = useShopStore();
+  const { stores, loading, error, filters, fetchStores, setSearch, setCategory } = useStoreStore();
   const [localSearchTerm, setLocalSearchTerm] = useState(filters.search);
   const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
 
