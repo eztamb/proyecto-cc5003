@@ -14,9 +14,10 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import server from "../../services/server";
-import type { StoreWithDetails, StoreReview } from "../../types/types";
+import type { StoreItem } from "../../types/types";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useUIStore } from "../../stores/useUIStore";
+import { useStoreDetails } from "../../hooks/useStoreDetails";
 import StoreHero from "./StoreHero";
 import ProductCard from "../products/ProductCard";
 import ReviewList from "../reviews/ReviewList";
@@ -30,70 +31,48 @@ const StoreDetails: React.FC = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useUIStore();
 
-  const [store, setStore] = useState<StoreWithDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    store,
+    loading,
+    error,
+    handleReviewSaved,
+    deleteReview,
+    addItemToState,
+    updateItemInState,
+    deleteItemFromState,
+  } = useStoreDetails(storeId);
 
+  // State local para UI
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
   const [deleteReviewDialogOpen, setDeleteReviewDialogOpen] = useState(false);
+  const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
+
   const [targetReviewId, setTargetReviewId] = useState<string | null>(null);
-  const [userReview, setUserReview] = useState<StoreReview | null>(null);
+  const [targetItemId, setTargetItemId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<StoreItem | null>(null);
+
+  // Derivar reseña del usuario actual si existe
+  const userReview =
+    store && user ? store.reviews.find((r) => r.user.id === user.id) || null : null;
 
   useEffect(() => {
-    const fetchDetails = async () => {
-      if (!storeId) return;
-      try {
-        setLoading(true);
-        const data = await server.getStoreWithDetails(storeId);
-        setStore(data);
-      } catch {
-        setError("Error al cargar la tienda");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDetails();
-  }, [storeId]);
-
-  useEffect(() => {
-    if (store && user) {
-      setUserReview(store.reviews.find((r) => r.user.id === user.id) || null);
+    if (editingItem) {
+      setShowItemForm(true);
     }
-  }, [store, user]);
-
-  const updateStoreReviews = (reviews: StoreReview[]) => {
-    if (!store) return;
-    const avg =
-      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
-    setStore({ ...store, reviews, averageRating: avg });
-  };
-
-  const handleReviewSaved = (savedReview: StoreReview) => {
-    if (!store) return;
-    const exists = store.reviews.find((r) => r.id === savedReview.id);
-    const updatedReviews = exists
-      ? store.reviews.map((r) => (r.id === savedReview.id ? savedReview : r))
-      : [...store.reviews, savedReview];
-
-    updateStoreReviews(updatedReviews);
-    setShowReviewForm(false);
-  };
+  }, [editingItem]);
 
   const handleDeleteReview = async () => {
-    if (!targetReviewId || !store) return;
-    try {
-      await server.deleteStoreReview(targetReviewId);
-      const updatedReviews = store.reviews.filter((r) => r.id !== targetReviewId);
-      updateStoreReviews(updatedReviews);
-      if (userReview?.id === targetReviewId) setUserReview(null);
-      showSnackbar("Reseña eliminada", "success");
-    } catch {
-      showSnackbar("Error al eliminar", "error");
-    } finally {
-      setDeleteReviewDialogOpen(false);
-    }
+    if (!targetReviewId) return;
+    await deleteReview(targetReviewId);
+    setDeleteReviewDialogOpen(false);
+  };
+
+  const handleDeleteItem = async () => {
+    if (!targetItemId) return;
+    await deleteItemFromState(targetItemId);
+    setDeleteItemDialogOpen(false);
   };
 
   const handleDeleteStore = async () => {
@@ -106,6 +85,11 @@ const StoreDetails: React.FC = () => {
       showSnackbar("Error", "error");
       setDeleteStoreDialogOpen(false);
     }
+  };
+
+  const handleItemFormClose = () => {
+    setShowItemForm(false);
+    setEditingItem(null);
   };
 
   if (loading)
@@ -137,7 +121,7 @@ const StoreDetails: React.FC = () => {
               component={Link}
               to={`/edit-store/${store.id}`}
             >
-              Editar
+              Editar Tienda
             </Button>
             <Button
               variant="contained"
@@ -145,7 +129,7 @@ const StoreDetails: React.FC = () => {
               startIcon={<DeleteIcon />}
               onClick={() => setDeleteStoreDialogOpen(true)}
             >
-              Eliminar
+              Eliminar Tienda
             </Button>
           </Box>
         )}
@@ -166,7 +150,24 @@ const StoreDetails: React.FC = () => {
           <Grid container spacing={4}>
             {store.items.map((item) => (
               <Grid item key={item.id} xs={12} sm={6} md={4}>
-                <ProductCard item={item} />
+                <ProductCard
+                  item={item}
+                  onEdit={
+                    canManage
+                      ? (itm) => {
+                          setEditingItem(itm);
+                        }
+                      : undefined
+                  }
+                  onDelete={
+                    canManage
+                      ? (id) => {
+                          setTargetItemId(id);
+                          setDeleteItemDialogOpen(true);
+                        }
+                      : undefined
+                  }
+                />
               </Grid>
             ))}
           </Grid>
@@ -201,23 +202,33 @@ const StoreDetails: React.FC = () => {
       {showReviewForm && storeId && (
         <ReviewForm
           storeId={storeId}
-          onReviewAdded={handleReviewSaved}
+          onReviewAdded={(review) => {
+            handleReviewSaved(review);
+            setShowReviewForm(false);
+          }}
           onCancel={() => setShowReviewForm(false)}
           user={user}
           initialReview={userReview}
         />
       )}
+
       {showItemForm && storeId && (
         <ItemForm
           storeId={storeId}
-          onItemAdded={(newItem) => {
-            setStore({ ...store, items: [...store.items, newItem] });
-            setShowItemForm(false);
+          initialItem={editingItem}
+          onItemSaved={(savedItem) => {
+            if (editingItem) {
+              updateItemInState(savedItem);
+            } else {
+              addItemToState(savedItem);
+            }
+            handleItemFormClose();
           }}
-          onCancel={() => setShowItemForm(false)}
+          onCancel={handleItemFormClose}
         />
       )}
 
+      {/* Dialogs */}
       <ConfirmDialog
         open={deleteStoreDialogOpen}
         title="Eliminar Tienda"
@@ -231,6 +242,13 @@ const StoreDetails: React.FC = () => {
         content="¿Eliminar esta reseña?"
         onClose={() => setDeleteReviewDialogOpen(false)}
         onConfirm={handleDeleteReview}
+      />
+      <ConfirmDialog
+        open={deleteItemDialogOpen}
+        title="Eliminar Producto"
+        content="¿Estás seguro de que deseas eliminar este producto?"
+        onClose={() => setDeleteItemDialogOpen(false)}
+        onConfirm={handleDeleteItem}
       />
     </>
   );

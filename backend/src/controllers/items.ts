@@ -79,4 +79,61 @@ router.post("/", middleware.auth, middleware.isSellerOrAdmin, async (req, res) =
   return;
 });
 
+router.put("/:id", middleware.auth, middleware.isSellerOrAdmin, async (req, res) => {
+  const { name, description, picture, price } = req.body;
+  const user = req.user;
+
+  const item = await Item.findById(req.params.id);
+  if (!item) {
+    return res.status(404).json({ error: "item not found" });
+  }
+
+  const store = await Store.findById(item.store);
+  if (!store) {
+    return res.status(404).json({ error: "store not found" });
+  }
+
+  // validar permisos: Admin o Dueño de la tienda
+  if (user?.role !== "admin" && store.owner.toString() !== user?.id) {
+    return res.status(403).json({ error: "permission denied" });
+  }
+
+  item.name = name;
+  item.description = description;
+  item.picture = picture;
+  item.price = price;
+
+  const updatedItem = await item.save();
+  res.json(updatedItem);
+  return;
+});
+
+router.delete("/:id", middleware.auth, middleware.isSellerOrAdmin, async (req, res) => {
+  const user = req.user;
+
+  const item = await Item.findById(req.params.id);
+  if (!item) {
+    return res.status(404).end();
+  }
+
+  const store = await Store.findById(item.store);
+  if (!store) {
+    // si no hay tienda asociada (data inconsistente), permitimos borrar al admin
+    if (user?.role === "admin") {
+      await Item.findByIdAndDelete(req.params.id);
+      return res.status(204).end();
+    }
+    return res.status(404).json({ error: "associated store not found" });
+  }
+
+  // validar permisos
+  if (user?.role !== "admin" && store.owner.toString() !== user?.id) {
+    return res.status(403).json({ error: "permission denied" });
+  }
+
+  await Item.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+  return;
+});
+
 export default router;

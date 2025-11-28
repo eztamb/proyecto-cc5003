@@ -71,6 +71,16 @@ const createStoreItem = (item: NewItem): Promise<StoreItem> => {
   return axios.post(`${baseUrl}/items`, item, getAuthHeaders()).then((response) => response.data);
 };
 
+const updateStoreItem = (id: string, item: NewItem): Promise<StoreItem> => {
+  return axios
+    .put(`${baseUrl}/items/${id}`, item, getAuthHeaders())
+    .then((response) => response.data);
+};
+
+const deleteStoreItem = (id: string): Promise<void> => {
+  return axios.delete(`${baseUrl}/items/${id}`, getAuthHeaders()).then(() => undefined);
+};
+
 const getAllStoreReviews = (): Promise<StoreReview[]> => {
   return axios.get(`${baseUrl}/reviews`).then((response) => response.data);
 };
@@ -181,6 +191,8 @@ export default {
   getAllStoreItems,
   getStoreItemsByStoreId,
   createStoreItem,
+  updateStoreItem,
+  deleteStoreItem,
   searchItems,
   getAllStoreReviews,
   getStoreReviewsByStoreId,

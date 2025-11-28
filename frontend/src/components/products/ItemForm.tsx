@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, TextField, Button } from "@mui/material";
 import server from "../../services/server";
 import type { StoreItem, NewItem } from "../../types/types";
@@ -9,11 +9,12 @@ import LoadingButton from "../common/LoadingButton";
 
 interface ItemFormProps {
   storeId: string;
-  onItemAdded: (item: StoreItem) => void;
+  onItemSaved: (item: StoreItem) => void;
   onCancel: () => void;
+  initialItem?: StoreItem | null;
 }
 
-const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) => {
+const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemSaved, onCancel, initialItem }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -23,6 +24,17 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
 
   const [loading, setLoading] = useState(false);
   const { showSnackbar } = useUIStore();
+
+  useEffect(() => {
+    if (initialItem) {
+      setFormData({
+        name: initialItem.name,
+        description: initialItem.description,
+        price: initialItem.price,
+        picture: initialItem.picture || "",
+      });
+    }
+  }, [initialItem]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,15 +48,23 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
     e.preventDefault();
     setLoading(true);
 
-    const newItem: NewItem = {
+    const itemPayload: NewItem = {
       ...formData,
       storeId,
     };
 
     try {
-      const addedItem = await server.createStoreItem(newItem);
-      showSnackbar("Item agregado con éxito", "success");
-      onItemAdded(addedItem);
+      let savedItem: StoreItem;
+      if (initialItem) {
+        // Update
+        savedItem = await server.updateStoreItem(initialItem.id, itemPayload);
+        showSnackbar("Item actualizado con éxito", "success");
+      } else {
+        // Create
+        savedItem = await server.createStoreItem(itemPayload);
+        showSnackbar("Item agregado con éxito", "success");
+      }
+      onItemSaved(savedItem);
     } catch (error) {
       showSnackbar(getErrorMessage(error), "error");
     } finally {
@@ -53,7 +73,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
   };
 
   return (
-    <BaseModal open={true} onClose={onCancel} title="Agregar Item">
+    <BaseModal open={true} onClose={onCancel} title={initialItem ? "Editar Item" : "Agregar Item"}>
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
         <TextField
           name="name"
@@ -102,7 +122,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ storeId, onItemAdded, onCancel }) =
             Cancelar
           </Button>
           <LoadingButton type="submit" variant="contained" loading={loading}>
-            Agregar Item
+            {initialItem ? "Guardar Cambios" : "Agregar Item"}
           </LoadingButton>
         </Box>
       </Box>

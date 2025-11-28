@@ -63,6 +63,30 @@ export const useStoreDetails = (storeId: string | undefined) => {
     if (store) setStore({ ...store, items: [...store.items, newItem] });
   };
 
+  const updateItemInState = (updatedItem: StoreItem) => {
+    if (!store) return;
+    setStore({
+      ...store,
+      items: store.items.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    });
+  };
+
+  const deleteItemFromState = async (itemId: string) => {
+    if (!store) return;
+    try {
+      await server.deleteStoreItem(itemId);
+      setStore({
+        ...store,
+        items: store.items.filter((item) => item.id !== itemId),
+      });
+      showSnackbar("Producto eliminado", "success");
+      return true;
+    } catch {
+      showSnackbar("Error al eliminar producto", "error");
+      return false;
+    }
+  };
+
   return {
     store,
     loading,
@@ -70,5 +94,7 @@ export const useStoreDetails = (storeId: string | undefined) => {
     handleReviewSaved,
     deleteReview,
     addItemToState,
+    updateItemInState,
+    deleteItemFromState,
   };
 };
